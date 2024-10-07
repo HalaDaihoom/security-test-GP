@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Api.Models;
 namespace Api.Controllers;
 
+
 [ApiController]
 [Route("[controller]")]
 public class Home : ControllerBase
@@ -14,6 +15,7 @@ public class Home : ControllerBase
     }
 
     [HttpPost]
+    
     public IActionResult login([FromBody]User body){
         var user=_context.User.FirstOrDefault(u=>u.Email==body.Email && u.Password==body.Password);
 
