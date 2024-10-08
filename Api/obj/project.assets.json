@@ -2765,6 +2765,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "Microsoft.EntityFrameworkCore >= 8.0.8",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.8",
       "Microsoft.EntityFrameworkCore.InMemory >= 8.0.8",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.8",
@@ -2773,24 +2774,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Alrowad\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\TC\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Alrowad\\Desktop\\security-test\\Api\\Api.csproj",
+      "projectUniqueName": "F:\\Downloads\\Security-Test\\security-test-GP\\Api\\Api.csproj",
       "projectName": "Api",
-      "projectPath": "C:\\Users\\Alrowad\\Desktop\\security-test\\Api\\Api.csproj",
-      "packagesPath": "C:\\Users\\Alrowad\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Alrowad\\Desktop\\security-test\\Api\\obj\\",
+      "projectPath": "F:\\Downloads\\Security-Test\\security-test-GP\\Api\\Api.csproj",
+      "packagesPath": "C:\\Users\\TC\\.nuget\\packages\\",
+      "outputPath": "F:\\Downloads\\Security-Test\\security-test-GP\\Api\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Alrowad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\TC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -2822,6 +2818,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Microsoft.EntityFrameworkCore": {
+            "target": "Package",
+            "version": "[8.0.8, )"
+          },
           "Microsoft.EntityFrameworkCore.Design": {
             "target": "Package",
             "version": "[8.0.8, )"
@@ -2831,6 +2831,8 @@
             "version": "[8.0.8, )"
           },
           "Microsoft.EntityFrameworkCore.Tools": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
             "target": "Package",
             "version": "[8.0.8, )"
           },

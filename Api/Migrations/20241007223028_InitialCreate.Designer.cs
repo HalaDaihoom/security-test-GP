@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    [Migration("20241007174142_InitialCreate")]
+    [Migration("20241007223028_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -37,11 +37,9 @@ namespace Api.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Password")
