@@ -1,30 +1,29 @@
-using Api.Models;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Api.Models;
 
-public class ApiContext : DbContext
-{
-    public ApiContext() { }
 
-    public ApiContext(DbContextOptions<ApiContext> options)
-        : base(options)
+namespace Api.Models {
+
+    public class ApiContext : IdentityDbContext<ApplicationUser>
     {
+         public ApiContext() { }
 
-    }
+            public ApiContext(DbContextOptions<ApiContext> options)
+              : base(options)
+         {
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-    }
+         }
+
+    //      protected override void OnModelCreating(ModelBuilder modelBuilder)
+    //     {
+    //         base.OnModelCreating(modelBuilder);
+    //     }
     
-    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    // {
-    //     optionsBuilder.UseMySQL("Server=localhost;Database=Api;User=root;Password=12345678;");
+    
+    // public DbSet<User> Users { get; set; }
 
-    //     base.OnConfiguring(optionsBuilder);
-    // }
-
-    public DbSet<User> User {get ; set;}
    
+}
 }
