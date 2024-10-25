@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    [Migration("20241019173658_SeedRoles")]
+    [Migration("20241025074420_SeedRoles")]
     partial class SeedRoles
     {
         /// <inheritdoc />
