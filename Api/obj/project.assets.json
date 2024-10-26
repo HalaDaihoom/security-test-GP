@@ -7259,24 +7259,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Alrowad\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\TC\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Alrowad\\Downloads\\security-test-GP (1)\\security-test-GP\\Api\\Api.csproj",
+      "projectUniqueName": "F:\\VIP\\Graduation Project\\security-test-GP\\Api\\Api.csproj",
       "projectName": "Api",
-      "projectPath": "C:\\Users\\Alrowad\\Downloads\\security-test-GP (1)\\security-test-GP\\Api\\Api.csproj",
-      "packagesPath": "C:\\Users\\Alrowad\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Alrowad\\Downloads\\security-test-GP (1)\\security-test-GP\\Api\\obj\\",
+      "projectPath": "F:\\VIP\\Graduation Project\\security-test-GP\\Api\\Api.csproj",
+      "packagesPath": "C:\\Users\\TC\\.nuget\\packages\\",
+      "outputPath": "F:\\VIP\\Graduation Project\\security-test-GP\\Api\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Alrowad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\TC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -7370,7 +7365,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
