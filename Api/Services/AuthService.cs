@@ -39,7 +39,9 @@ namespace Api.Services
         UserName = model.Username,
         Email = model.Email,
         FirstName = model.FirstName,
-        LastName = model.LastName
+        LastName = model.LastName,
+        Gender = model.Gender,
+        Image = model.Image
     };
 
     var result = await _userManager.CreateAsync(user, model.Password);
