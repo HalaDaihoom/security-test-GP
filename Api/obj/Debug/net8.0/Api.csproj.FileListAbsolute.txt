@@ -971,3 +971,4 @@ C:\Users\Alrowad\Downloads\security-test-GP (1)\security-test-GP\Api\obj\Debug\n
 C:\Users\Alrowad\Downloads\security-test-GP (1)\security-test-GP\Api\obj\Debug\net8.0\Api.pdb
 C:\Users\Alrowad\Downloads\security-test-GP (1)\security-test-GP\Api\obj\Debug\net8.0\Api.genruntimeconfig.cache
 C:\Users\Alrowad\Downloads\security-test-GP (1)\security-test-GP\Api\obj\Debug\net8.0\ref\Api.dll
+E:\projects\Graduation_Project\security-test-GP\Api\bin\Debug\net8.0\package-lock.json

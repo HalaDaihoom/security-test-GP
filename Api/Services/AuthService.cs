@@ -77,48 +77,73 @@ namespace Api.Services
     };
 }
 
-        // public async Task<AuthModel> RegisterAsync(RegisterModel model)
-        // {
-        //     if (await _userManager.FindByEmailAsync(model.Email) is not null)
-        //         return new AuthModel { Message = "Email is already registered!" };
+//     public async Task<AuthModel> RegisterAsync(RegisterModel model)
+// {
+//     // Check for existing email
+//     if (await _userManager.FindByEmailAsync(model.Email) is not null)
+//         return new AuthModel { Message = "Email is already registered!" };
 
-        //     if (await _userManager.FindByNameAsync(model.Username) is not null)
-        //         return new AuthModel { Message = "Username is already registered!" };
+//     // Check for existing username
+//     if (await _userManager.FindByNameAsync(model.Username) is not null)
+//         return new AuthModel { Message = "Username is already registered!" };
 
-        //     var user = new ApplicationUser
-        //     {
-        //         UserName = model.Username,
-        //         Email = model.Email,
-        //         FirstName = model.FirstName,
-        //         LastName = model.LastName
-        //     };
+//     var user = new ApplicationUser
+//     {
+//         UserName = model.Username,
+//         Email = model.Email,
+//         FirstName = model.FirstName,
+//         LastName = model.LastName,
+//         Gender = model.Gender,
+//         Image = model.Image
+//     };
 
-        //     var result = await _userManager.CreateAsync(user, model.Password);
+//     var result = await _userManager.CreateAsync(user, model.Password);
 
-        //     if (!result.Succeeded)
-        //     {
-        //         var errors = string.Empty;
+//     // Handle registration errors
+//     if (!result.Succeeded)
+//     {
+//         var errors = string.Join(",", result.Errors.Select(e => e.Description));
+//         return new AuthModel { Message = errors };
+//     }
 
-        //         foreach (var error in result.Errors)
-        //             errors += $"{error.Description},";
+//     // Ensure the role exists
+//     if (!await _roleManager.RoleExistsAsync("User"))
+//     {
+//         await _roleManager.CreateAsync(new IdentityRole("User"));
+//     }
 
-        //         return new AuthModel { Message = errors };
-        //     }
+//     // Assign user role
+//     await _userManager.AddToRoleAsync(user, "User");
 
-        //     await _userManager.AddToRoleAsync(user, "User");
+//     // Add claims for the user
+//     var userClaims = new List<Claim>
+//     {
+//         new Claim(ClaimTypes.NameIdentifier, user.Id), // Add NameIdentifier claim
+//         new Claim(ClaimTypes.Name,user.Email)
+//     };
 
-        //     var jwtSecurityToken = await CreateJwtToken(user);
+//     // Ensure the claims are added for the user
+//     foreach (var claim in userClaims)
+//     {
+//         if (!(await _userManager.GetClaimsAsync(user)).Any(c => c.Type == claim.Type && c.Value == claim.Value))
+//         {
+//             await _userManager.AddClaimAsync(user, claim);
+//         }
+//     }
 
-        //     return new AuthModel
-        //     {
-        //         Email = user.Email,
-        //         ExpiresOn = jwtSecurityToken.ValidTo,
-        //         IsAuthenticated = true,
-        //         Roles = new List<string> { "User" },
-        //         Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-        //         Username = user.UserName
-        //     };
-        // }
+//     // Create JWT
+//     var jwtSecurityToken = await CreateJwtToken(user);
+
+//     return new AuthModel
+//     {
+//         Email = user.Email,
+//         ExpiresOn = jwtSecurityToken.ValidTo,
+//         IsAuthenticated = true,
+//         Roles = new List<string> { "User" },
+//         Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+//         Username = user.UserName
+//     };
+// }
 
 
         public async Task<AuthModel> GetTokenAsync(TokenRequestModel model)
@@ -169,13 +194,16 @@ private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
 
     var claims = new[]
     {
-        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim(ClaimTypes.Name,user.Email ),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Add NameIdentifier claim here as well
+
         new Claim("uid", user.Id)
     }
     .Union(userClaims)
-    .Union(roleClaims); // Use the retrieved roles
+    .Union(roleClaims);
 
     var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
     var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
@@ -190,38 +218,6 @@ private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
     return jwtSecurityToken;
 }
 
-        // private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
-        // {
-        //     var userClaims = await _userManager.GetClaimsAsync(user);
-        //     var roles = await _userManager.GetRolesAsync(user);
-        //     var roleClaims = new List<Claim>();
-
-        //     foreach (var role in roles)
-        //         roleClaims.Add(new Claim("roles", role));
-
-                
-        //     var claims = new[]
-        //     {
-        //         new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-        //         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //         new Claim(JwtRegisteredClaimNames.Email, user.Email),
-        //         new Claim("uid", user.Id),
-                
-        //     }
-        //     .Union(userClaims)
-        //     .Union(roleClaims);
-
-        //     var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("JW60mNncpxD9VMCbjQvjCzuArtgOIq0Vg6S1GhHlwqWg="));
-        //     var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-
-        //     var jwtSecurityToken = new JwtSecurityToken(
-        //         issuer: _jwt.Issuer,
-        //         audience: _jwt.Audience,
-        //         claims: claims,
-        //         expires: DateTime.Now.AddDays(_jwt.DurationInDays),
-        //         signingCredentials: signingCredentials);
-
-        //     return jwtSecurityToken;
-        // }
+       
     }
 }

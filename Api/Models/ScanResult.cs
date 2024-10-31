@@ -19,8 +19,8 @@ namespace Api.Models
     public string Details { get; set; } 
 
 
-    public ScanRequest ScanRequest { get; set; } 
-     public Vulnerability Vulnerability { get; set; } 
+    public ScanRequest? ScanRequest { get; set; } 
+     public Vulnerability? Vulnerability { get; set; } 
 
     }
     

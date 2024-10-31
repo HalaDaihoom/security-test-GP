@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Linq;
 
 
 namespace Api.Controllers
@@ -15,10 +18,12 @@ namespace Api.Controllers
     public class HomeController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ApiContext _context;
 
-        public HomeController(IAuthService authService)
+        public HomeController(IAuthService authService,ApiContext context)
         {
             _authService = authService;
+             _context = context ;
         }
 
         [HttpPost("register")]
@@ -71,5 +76,38 @@ namespace Api.Controllers
         {
             return Ok(new { message = "This is a protected resource!" });
         }
+
+
+
+
+
+    [Authorize(Roles = "User")]
+    [HttpPost("automatic-scanner")]
+    public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
+    {
+        if (model == null || !ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return BadRequest("User ID not found.");
+        }
+
+        model.UserId = userId;
+        model.CreatedAt = DateTime.UtcNow;
+
+        _context.Websites.Add(model);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(AutomaticScanner), new { id = model.WebsiteId }, model);
+    }
+
+
+
+
+       
+
     }
 }

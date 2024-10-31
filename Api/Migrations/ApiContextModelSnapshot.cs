@@ -184,7 +184,6 @@ namespace Api.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("VulnerabilityName")
@@ -213,7 +212,6 @@ namespace Api.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("WebsiteId");
@@ -403,9 +401,7 @@ namespace Api.Migrations
                 {
                     b.HasOne("Api.Models.ApplicationUser", "User")
                         .WithMany("Websites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

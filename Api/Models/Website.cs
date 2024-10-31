@@ -6,9 +6,10 @@ namespace Api.Models
 {
     public class Website
     {
+        [Key]
         public int WebsiteId { get; set; } 
         [ForeignKey("User")]
-        public string UserId { get; set; } 
+        public string? UserId { get; set; } 
 
         [Required]
         [MaxLength(255)]
@@ -18,7 +19,7 @@ namespace Api.Models
         public DateTime CreatedAt { get; set; } 
 
         
-        public ApplicationUser User { get; set; }
-       public ICollection<ScanRequest> ScanRequests { get; set; }
+        public ApplicationUser? User { get; set; }
+       public ICollection<ScanRequest>? ScanRequests { get; set; }
     }
 }

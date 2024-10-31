@@ -22,13 +22,13 @@ namespace Api.Models
 
     [ForeignKey("Vulnerability")]
     public int? VulnerabilityId { get; set; } 
-    public Vulnerability Vulnerability { get; set; } 
+    public Vulnerability? Vulnerability { get; set; } 
 
     
-    public ICollection<ScanResult> ScanResults { get; set; }
+    public ICollection<ScanResult>? ScanResults { get; set; }
 
-     public ApplicationUser User { get; set; }
+     public ApplicationUser? User { get; set; }
 
-     public Website Website { get; set; } 
+     public Website? Website { get; set; } 
     }
 }

@@ -12,7 +12,7 @@ namespace Api.Models
         [Required, MaxLength(50)]
         public string LastName { get; set; }
 
-       
+         
         public string? Gender { get; set; }
 
          public byte[]? Image { get; set; }

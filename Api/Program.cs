@@ -47,6 +47,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme =JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(o =>
 {
@@ -117,7 +118,9 @@ app.UseCors("AllowSpecificOrigin");
 
 // Ensure this is before UseAuthorization
 app.UseAuthentication();
+
 app.UseAuthorization();
+
 
 // Map controllers
 app.MapControllers();
