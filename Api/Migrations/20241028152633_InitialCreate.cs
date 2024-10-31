@@ -44,6 +44,9 @@ namespace Api.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Gender = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Image = table.Column<byte[]>(type: "longblob", nullable: true),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
@@ -70,6 +73,24 @@ namespace Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Vulnerabilities",
+                columns: table => new
+                {
+                    VulnerabilityId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    VulnerabilityName = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vulnerabilities", x => x.VulnerabilityId);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -200,6 +221,98 @@ namespace Api.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "Websites",
+                columns: table => new
+                {
+                    WebsiteId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Url = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Websites", x => x.WebsiteId);
+                    table.ForeignKey(
+                        name: "FK_Websites_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ScanRequests",
+                columns: table => new
+                {
+                    RequestId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    WebsiteId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    StartedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    VulnerabilityId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScanRequests", x => x.RequestId);
+                    table.ForeignKey(
+                        name: "FK_ScanRequests_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ScanRequests_Vulnerabilities_VulnerabilityId",
+                        column: x => x.VulnerabilityId,
+                        principalTable: "Vulnerabilities",
+                        principalColumn: "VulnerabilityId");
+                    table.ForeignKey(
+                        name: "FK_ScanRequests_Websites_WebsiteId",
+                        column: x => x.WebsiteId,
+                        principalTable: "Websites",
+                        principalColumn: "WebsiteId",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ScanResults",
+                columns: table => new
+                {
+                    ResultId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    RequestId = table.Column<int>(type: "int", nullable: false),
+                    VulnerabilityId = table.Column<int>(type: "int", nullable: false),
+                    Severity = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Details = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScanResults", x => x.ResultId);
+                    table.ForeignKey(
+                        name: "FK_ScanResults_ScanRequests_RequestId",
+                        column: x => x.RequestId,
+                        principalTable: "ScanRequests",
+                        principalColumn: "RequestId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ScanResults_Vulnerabilities_VulnerabilityId",
+                        column: x => x.VulnerabilityId,
+                        principalTable: "Vulnerabilities",
+                        principalColumn: "VulnerabilityId",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -236,6 +349,36 @@ namespace Api.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScanRequests_UserId",
+                table: "ScanRequests",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScanRequests_VulnerabilityId",
+                table: "ScanRequests",
+                column: "VulnerabilityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScanRequests_WebsiteId",
+                table: "ScanRequests",
+                column: "WebsiteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScanResults_RequestId",
+                table: "ScanResults",
+                column: "RequestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ScanResults_VulnerabilityId",
+                table: "ScanResults",
+                column: "VulnerabilityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Websites_UserId",
+                table: "Websites",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -257,7 +400,19 @@ namespace Api.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ScanResults");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "ScanRequests");
+
+            migrationBuilder.DropTable(
+                name: "Vulnerabilities");
+
+            migrationBuilder.DropTable(
+                name: "Websites");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

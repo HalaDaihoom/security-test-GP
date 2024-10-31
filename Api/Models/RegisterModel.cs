@@ -18,5 +18,9 @@ namespace Api.Models
 
         [Required, StringLength(256)]
         public string Password { get; set; }
+         public string? Gender { get; set; }
+
+         public byte[]? Image { get; set; }
+
     }
 }

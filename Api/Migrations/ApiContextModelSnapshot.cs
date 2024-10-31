@@ -46,6 +46,12 @@ namespace Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("Gender")
+                        .HasColumnType("longtext");
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("longblob");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -94,6 +100,125 @@ namespace Api.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Api.Models.ScanRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int?>("VulnerabilityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WebsiteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VulnerabilityId");
+
+                    b.HasIndex("WebsiteId");
+
+                    b.ToTable("ScanRequests");
+                });
+
+            modelBuilder.Entity("Api.Models.ScanResult", b =>
+                {
+                    b.Property<int>("ResultId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ResultId"));
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("VulnerabilityId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ResultId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("VulnerabilityId");
+
+                    b.ToTable("ScanResults");
+                });
+
+            modelBuilder.Entity("Api.Models.Vulnerability", b =>
+                {
+                    b.Property<int>("VulnerabilityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("VulnerabilityId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("VulnerabilityName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("VulnerabilityId");
+
+                    b.ToTable("Vulnerabilities");
+                });
+
+            modelBuilder.Entity("Api.Models.Website", b =>
+                {
+                    b.Property<int>("WebsiteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("WebsiteId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("WebsiteId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Websites");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -228,6 +353,59 @@ namespace Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Api.Models.ScanRequest", b =>
+                {
+                    b.HasOne("Api.Models.ApplicationUser", "User")
+                        .WithMany("ScanRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Models.Vulnerability", "Vulnerability")
+                        .WithMany("ScanRequest")
+                        .HasForeignKey("VulnerabilityId");
+
+                    b.HasOne("Api.Models.Website", "Website")
+                        .WithMany("ScanRequests")
+                        .HasForeignKey("WebsiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vulnerability");
+
+                    b.Navigation("Website");
+                });
+
+            modelBuilder.Entity("Api.Models.ScanResult", b =>
+                {
+                    b.HasOne("Api.Models.ScanRequest", "ScanRequest")
+                        .WithMany("ScanResults")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Models.Vulnerability", "Vulnerability")
+                        .WithMany("ScanResults")
+                        .HasForeignKey("VulnerabilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ScanRequest");
+
+                    b.Navigation("Vulnerability");
+                });
+
+            modelBuilder.Entity("Api.Models.Website", b =>
+                {
+                    b.HasOne("Api.Models.ApplicationUser", "User")
+                        .WithMany("Websites")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -277,6 +455,30 @@ namespace Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("ScanRequests");
+
+                    b.Navigation("Websites");
+                });
+
+            modelBuilder.Entity("Api.Models.ScanRequest", b =>
+                {
+                    b.Navigation("ScanResults");
+                });
+
+            modelBuilder.Entity("Api.Models.Vulnerability", b =>
+                {
+                    b.Navigation("ScanRequest");
+
+                    b.Navigation("ScanResults");
+                });
+
+            modelBuilder.Entity("Api.Models.Website", b =>
+                {
+                    b.Navigation("ScanRequests");
                 });
 #pragma warning restore 612, 618
         }
