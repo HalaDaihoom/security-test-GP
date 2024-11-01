@@ -12,8 +12,8 @@ namespace Api.Controllers
 {
    
    // [Authorize ] 
-    [Route("api/[controller]")]
-     [ApiController]
+    [Route("/")]
+    [ApiController]
 
     public class HomeController : ControllerBase
     {
@@ -71,7 +71,7 @@ namespace Api.Controllers
 
        
         [Authorize(Roles = "User")]
-        [HttpGet("protected")]
+        [HttpGet("home")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });
@@ -82,7 +82,7 @@ namespace Api.Controllers
 
 
     [Authorize(Roles = "User")]
-    [HttpPost("automatic-scanner")]
+    [HttpPost("/scanners/automatic-scanner")]
     public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
     {
         if (model == null || !ModelState.IsValid)
