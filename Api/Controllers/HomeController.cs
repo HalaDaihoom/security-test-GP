@@ -25,6 +25,7 @@ namespace Api.Controllers
             _authService = authService;
              _context = context ;
         }
+       
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
@@ -55,19 +56,19 @@ namespace Api.Controllers
         }
 
         
-        [HttpPost("addrole")]
-        public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+        // [HttpPost("addrole")]
+        // public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
+        // {
+        //     if (!ModelState.IsValid)
+        //         return BadRequest(ModelState);
 
-            var result = await _authService.AddRoleAsync(model);
+        //     var result = await _authService.AddRoleAsync(model);
 
-            if (!string.IsNullOrEmpty(result))
-                return BadRequest(result);
+        //     if (!string.IsNullOrEmpty(result))
+        //         return BadRequest(result);
 
-            return Ok(model);
-        }
+        //     return Ok(model);
+        // }
 
        
         [Authorize(Roles = "User")]
@@ -79,35 +80,6 @@ namespace Api.Controllers
 
 
 
-
-
-    [Authorize(Roles = "User")]
-    [HttpPost("automatic-scanner")]
-    public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
-    {
-        if (model == null || !ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return BadRequest("User ID not found.");
-        }
-
-        model.UserId = userId;
-        model.CreatedAt = DateTime.UtcNow;
-
-        _context.Websites.Add(model);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(AutomaticScanner), new { id = model.WebsiteId }, model);
-    }
-
-
-
-
-       
 
     }
 }

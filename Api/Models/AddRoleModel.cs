@@ -5,9 +5,9 @@ namespace Api.Models
     public class AddRoleModel
     {
         [Required]
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public required string Role { get; set; }
     }
 }
