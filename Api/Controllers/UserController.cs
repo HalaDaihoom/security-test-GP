@@ -27,25 +27,25 @@ namespace Api.Controllers
         }
        
        [HttpPost("automatic-scanner")]
-    public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
+     public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
     {
-        if (model == null || !ModelState.IsValid)
-            return BadRequest(ModelState);
+            if (model == null || !ModelState.IsValid)
+                return BadRequest(ModelState);
 
         
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return BadRequest("User ID not found.");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("User ID not found.");
+            }
+
+            model.UserId = userId;
+            model.CreatedAt = DateTime.UtcNow;
+
+            _context.Websites.Add(model);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(AutomaticScanner), new { id = model.WebsiteId }, model);
         }
-
-        model.UserId = userId;
-        model.CreatedAt = DateTime.UtcNow;
-
-        _context.Websites.Add(model);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(AutomaticScanner), new { id = model.WebsiteId }, model);
-    }
     }
 }
