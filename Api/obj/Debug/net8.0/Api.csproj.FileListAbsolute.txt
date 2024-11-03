@@ -1226,3 +1226,12 @@ C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\obj\Debug\net8.0\scoped
 C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\obj\Debug\net8.0\Api.csproj.Up2Date
 C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\obj\Debug\net8.0\Api.genruntimeconfig.cache
 C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\obj\Debug\net8.0\ref\Api.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.runner.visualstudio.testadapter.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.runner.reporters.netcoreapp10.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.runner.utility.netcoreapp10.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\Castle.Core.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\Moq.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.abstractions.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.assert.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.core.dll
+C:\Users\Alrowad\Desktop\New folder\security-test-GP\Api\bin\Debug\net8.0\xunit.execution.dotnet.dll
