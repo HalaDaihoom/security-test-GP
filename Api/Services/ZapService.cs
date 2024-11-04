@@ -1,15 +1,12 @@
-
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Moq; 
 
 public class ZapService
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "ppf0gcd3ccmf64u738s9uq3ant"; // Replace with your actual ZAP API key
+    private const string ApiKey = "tku4lsd6a3lth0ku6bgepu637i"; // Replace with your actual ZAP API key
 
     public ZapService(HttpClient httpClient)
     {
@@ -17,7 +14,6 @@ public class ZapService
         _httpClient.BaseAddress = new Uri("http://localhost:8080"); // Set to ZAP's actual base address
         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); // Include API key in headers
     }
-
 
     /// <summary>
     /// Initiates an active scan on the given URL using ZAP's API.
@@ -107,6 +103,3 @@ public class ZapService
         }
     }
 }
-
-
-
