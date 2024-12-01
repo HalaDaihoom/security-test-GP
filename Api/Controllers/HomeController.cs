@@ -12,8 +12,8 @@ namespace Api.Controllers
 {
    
    // [Authorize ] 
-    [Route("/")]
-    [ApiController]
+    [Route("api/[controller]")]
+     [ApiController]
 
     public class HomeController : ControllerBase
     {
@@ -72,7 +72,7 @@ namespace Api.Controllers
 
        
         [Authorize(Roles = "User")]
-        [HttpGet("home")]
+        [HttpGet("protected")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });
@@ -81,37 +81,8 @@ namespace Api.Controllers
 
 
 
-<<<<<<< HEAD
-=======
-
-    [Authorize(Roles = "User")]
-    [HttpPost("/scanners/automatic-scanner")]
-    public async Task<IActionResult> AutomaticScanner([FromBody] Website model)
-    {
-        if (model == null || !ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return BadRequest("User ID not found.");
-        }
-
-        model.UserId = userId;
-        model.CreatedAt = DateTime.UtcNow;
-
-        _context.Websites.Add(model);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(AutomaticScanner), new { id = model.WebsiteId }, model);
-    }
-
-
-
-
-       
-
->>>>>>> 6caaae37d690b3e0607a97b33218487f5a763918
     }
 }
+
+
+
