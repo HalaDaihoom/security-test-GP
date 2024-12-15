@@ -253,6 +253,8 @@ namespace Api.Migrations
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     WebsiteId = table.Column<int>(type: "int", nullable: false),
+                    ZAPScanId = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Status = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     StartedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
