@@ -35,9 +35,12 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
     if (model == null || !ModelState.IsValid)
         return BadRequest(ModelState);
 
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userId))
-        return BadRequest("User ID not found.");
+            // Retrieve the user ID from the token (authentication)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("User ID not found.");
+            }
 
     // Initialize Website entry
     model.UserId = userId;
