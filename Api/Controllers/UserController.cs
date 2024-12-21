@@ -7,12 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Api.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
 using Api.Services;
 
 namespace Api.Controllers
 {
     [Authorize(Roles = "User")]
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -29,185 +31,130 @@ namespace Api.Controllers
             _logger = logger;
         }
 
-[HttpPost("automatic-scanner")]
-public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
-{
-    if (model == null || !ModelState.IsValid)
-        return BadRequest(ModelState);
+        [HttpPost("scanners/automatic-scanner")]
+        public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
+        {
+            if (model == null || !ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Retrieve the user ID from the token (authentication)
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-            {
                 return BadRequest("User ID not found.");
+
+            // Initialize Website entry
+            model.UserId = userId;
+            model.CreatedAt = DateTime.UtcNow;
+
+            _context.Websites.Add(model);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Initialize ScanRequest entry
+            var scanRequest = new ScanRequest
+            {
+                UserId = userId,
+                WebsiteId = model.WebsiteId,
+                Status = "In Progress",
+                StartedAt = DateTime.UtcNow
+            };
+
+            _context.ScanRequests.Add(scanRequest);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            string spiderId;
+            try
+            {
+                spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error starting ZAP spider: {ex.Message}");
             }
 
-    // Initialize Website entry
-    model.UserId = userId;
-    model.CreatedAt = DateTime.UtcNow;
+            string spiderStatus;
+            do
+            {
+                await Task.Delay(5000, cancellationToken);
+                spiderStatus = await _zapService.GetSpiderStatusAsync(spiderId, cancellationToken);
+                _logger.LogInformation($"Spider status: {spiderStatus}");
+            } while (spiderStatus != "100");
 
-    _context.Websites.Add(model);
-    await _context.SaveChangesAsync(cancellationToken);
+            string scanId;
+            try
+            {
+                scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
+                scanRequest.ZAPScanId = scanId; // Store the ScanId from ZAP
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error starting ZAP scan: {ex.Message}");
+            }
 
-    // Initialize ScanRequest entry
-    var scanRequest = new ScanRequest
-    {
-        UserId = userId,
-        WebsiteId = model.WebsiteId,
-        Status = "In Progress",
-        StartedAt = DateTime.UtcNow
-    };
+            string scanStatus;
+            int retryCount = 0;
+            const int maxRetries = 60; // Adjust for long scans
+            const int delayMilliseconds = 5000;
 
-    _context.ScanRequests.Add(scanRequest);
-    await _context.SaveChangesAsync(cancellationToken);
+            do
+            {
+                await Task.Delay(delayMilliseconds, cancellationToken);
+                scanStatus = await _zapService.GetScanStatusAsync(scanId, cancellationToken);
 
-    string spiderId;
-    try
-    {
-        spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Error starting ZAP spider: {ex.Message}");
-    }
+                _logger.LogInformation($"Scan status for scanId {scanId}: {scanStatus}");
 
-    string spiderStatus;
-    do
-    {
-        await Task.Delay(5000, cancellationToken);
-        spiderStatus = await _zapService.GetSpiderStatusAsync(spiderId, cancellationToken);
-        _logger.LogInformation($"Spider status: {spiderStatus}");
-    } while (spiderStatus != "100");
+                retryCount++;
+                if (retryCount > maxRetries)
+                {
+                    _logger.LogError($"Scan for scanId {scanId} timed out after {maxRetries * delayMilliseconds / 1000} seconds.");
+                    return StatusCode(504, "Scan timed out. Please try again.");
 
-    string scanId;
-    try
-    {
-        scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
-        scanRequest.ZAPScanId = scanId; // Store the ScanId from ZAP
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Error starting ZAP scan: {ex.Message}");
-    }
+                }
+            } while (!scanStatus.Equals("100", StringComparison.OrdinalIgnoreCase) &&
+                     !scanStatus.Equals("finished", StringComparison.OrdinalIgnoreCase));
 
-    string scanStatus;
-    int retryCount = 0;
-    const int maxRetries = 60; // Adjust for long scans
-    const int delayMilliseconds = 5000;
+            
 
-    do
-    {
-        await Task.Delay(delayMilliseconds, cancellationToken);
-        scanStatus = await _zapService.GetScanStatusAsync(scanId, cancellationToken);
+            // Update the ScanRequest status to "Completed" and add the completion time
+            scanRequest.Status = "Completed";
+            scanRequest.CompletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation($"Scan status for scanId {scanId}: {scanStatus}");
+            _logger.LogInformation($"ScanRequest for WebsiteId {model.WebsiteId} updated to 'Completed'.");
 
-        retryCount++;
-        if (retryCount > maxRetries)
-        {
-            _logger.LogError($"Scan for scanId {scanId} timed out after {maxRetries * delayMilliseconds / 1000} seconds.");
-            return StatusCode(504, "Scan timed out. Please try again.");
+            // Return a success message along with scan results
+            return Ok(new { Message = "Scan completed successfully"});
         }
-    } while (!scanStatus.Equals("100", StringComparison.OrdinalIgnoreCase) &&
-             !scanStatus.Equals("finished", StringComparison.OrdinalIgnoreCase));
 
-    string scanResults;
-    try
+
+
+    [HttpGet("scanners/automatic-scanner/scan-results/{scanId}")]
+    public async Task<IActionResult> GetScanResults(string scanId, CancellationToken cancellationToken)
     {
-        scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
+
+            string scanResults;
+            ZapAlertsResponse zapAlerts;
+            try
+            {
+                scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
+
+
+                    //report as a json
+                 zapAlerts = JsonConvert.DeserializeObject<ZapAlertsResponse>(scanResults);
+
+                return Ok(new { Message = "The report completed successfully", Results = zapAlerts.Alerts });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving scan results: {ex.Message}");
+            }
     }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Error retrieving scan results: {ex.Message}");
+
+
+
+
+
     }
 
-    // Update the ScanRequest status to "Completed" and add the completion time
-    scanRequest.Status = "Completed";
-    scanRequest.CompletedAt = DateTime.UtcNow;
-    await _context.SaveChangesAsync(cancellationToken);
 
-    _logger.LogInformation($"ScanRequest for WebsiteId {model.WebsiteId} updated to 'Completed'.");
-
-    // Return a success message along with scan results
-    return Ok(new { Message = "Scan completed successfully", Results = scanResults });
 }
-
-
-        // [HttpPost("automatic-scanner")]
-        // public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
-        // {
-        //     if (model == null || !ModelState.IsValid)
-        //         return BadRequest(ModelState);
-
-        //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //     if (string.IsNullOrEmpty(userId))
-        //         return BadRequest("User ID not found.");
-
-        //     model.UserId = userId;
-        //     model.CreatedAt = DateTime.UtcNow;
-
-        //     _context.Websites.Add(model);
-        //     await _context.SaveChangesAsync(cancellationToken);
-
-        //     var scanRequest = new ScanRequest
-        //     {
-        //         UserId = userId,
-        //         WebsiteId = model.WebsiteId,
-        //         Status = "In Progress",
-        //         StartedAt = DateTime.UtcNow
-        //     };
-        //     _context.ScanRequests.Add(scanRequest);
-        //     await _context.SaveChangesAsync(cancellationToken);
-
-        //     string spiderId;
-        //     try
-        //     {
-        //         spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return StatusCode(500, $"Error starting ZAP spider: {ex.Message}");
-        //     }
-
-        //     string spiderStatus;
-        //     do
-        //     {
-        //         await Task.Delay(5000, cancellationToken);
-        //         spiderStatus = await _zapService.GetSpiderStatusAsync(spiderId, cancellationToken);
-        //         _logger.LogInformation($"Spider status: {spiderStatus}");
-        //     } while (spiderStatus != "100");
-
-        //     string scanId;
-        //     try
-        //     {
-        //         scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return StatusCode(500, $"Error starting ZAP scan: {ex.Message}");
-        //     }
-
-        //     string scanStatus;
-        //     do
-        //     {
-        //         await Task.Delay(5000, cancellationToken);
-        //         scanStatus = await _zapService.GetScanStatusAsync(scanId, cancellationToken);
-        //         _logger.LogInformation($"Scan status for scanId {scanId}: {scanStatus}");
-        //     } while (scanStatus != "FINISHED");
-
-        //     string scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
-
-        //     // Update the ScanRequest status to "Completed" and add the completion time
-        //     scanRequest.Status = "Completed";
-        //     scanRequest.CompletedAt = DateTime.UtcNow;
-        //     await _context.SaveChangesAsync(cancellationToken);
-        //     _logger.LogInformation($"ScanRequest for WebsiteId {model.WebsiteId} updated to 'Completed'.");
-
-        //     // Return a success message along with scan results
-        //     return Ok(new { Message = "Scan completed successfully", Results = scanResults });
-        // }
-    }
-}
-
-
