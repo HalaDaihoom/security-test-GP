@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace Api.Models
 {
@@ -13,9 +14,15 @@ public class ZapAlert
     public string Solution { get; set; }
 }
 
-public class ZapAlertsResponse
-{
-    public List<ZapAlert> Alerts { get; set; }
-}
+ public class ZapAlertsResponse
+ {
+   [JsonProperty("alerts")]
+     public List<ZapAlert> Alerts { get; set; }
+ }
 
-}
+
+
+
+
+
+ }
