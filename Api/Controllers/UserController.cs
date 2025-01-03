@@ -92,7 +92,7 @@ namespace Api.Controllers
 
             string scanStatus;
             int retryCount = 0;
-            const int maxRetries = 60; // Adjust for long scans
+            const int maxRetries = 120; // Adjust for long scans
             const int delayMilliseconds = 5000;
 
             do
@@ -122,34 +122,39 @@ namespace Api.Controllers
             _logger.LogInformation($"ScanRequest for WebsiteId {model.WebsiteId} updated to 'Completed'.");
 
             // Return a success message along with scan results
-            return Ok(new { Message = "Scan completed successfully"});
+            return Ok(new { Message = "Scan completed successfully!", scanId = scanId });
         }
 
 
 
-    [HttpGet("scanners/automatic-scanner/scan-results/{scanId}")]
-    public async Task<IActionResult> GetScanResults(string scanId, CancellationToken cancellationToken)
+    
+
+
+    [HttpGet("scanners/automatic-scanner/scan-results")]
+    public async Task<IActionResult> GetScanResults([FromQuery] string scanId, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"Received request with scanId: {scanId}"); // Log incoming scanId
+        if (string.IsNullOrEmpty(scanId))
+            return BadRequest("Scan ID is required.");
 
-            string scanResults;
-            ZapAlertsResponse zapAlerts;
-            try
-            {
-                scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
-
-
-                    //report as a json
-                 zapAlerts = JsonConvert.DeserializeObject<ZapAlertsResponse>(scanResults);
-
-                return Ok(new { Message = "The report completed successfully", Results = zapAlerts.Alerts });
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error retrieving scan results: {ex.Message}");
-            }
+        try
+        {
+            string scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
+            var zapAlerts = JsonConvert.DeserializeObject<ZapAlertsResponse>(scanResults);
+            return Ok(new { Message = "The report completed successfully", Results = zapAlerts.Alerts });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}"); // Log exception
+            return StatusCode(500, $"Error retrieving scan results: {ex.Message}");
+        }
     }
+    
 
+
+
+
+    
 
 
 
