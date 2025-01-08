@@ -130,6 +130,9 @@ namespace Api.Migrations
                     b.Property<int>("WebsiteId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ZAPScanId")
+                        .HasColumnType("int");
+
                     b.HasKey("RequestId");
 
                     b.HasIndex("UserId");
@@ -150,17 +153,15 @@ namespace Api.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ResultId"));
 
                     b.Property<string>("Details")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<int>("RequestId")
                         .HasColumnType("int");
 
                     b.Property<string>("Severity")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("VulnerabilityId")
+                    b.Property<int?>("VulnerabilityId")
                         .HasColumnType("int");
 
                     b.HasKey("ResultId");
@@ -388,9 +389,7 @@ namespace Api.Migrations
 
                     b.HasOne("Api.Models.Vulnerability", "Vulnerability")
                         .WithMany("ScanResults")
-                        .HasForeignKey("VulnerabilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VulnerabilityId");
 
                     b.Navigation("ScanRequest");
 

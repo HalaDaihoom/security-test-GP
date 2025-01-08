@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj": {}
+    "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj": {
+    "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
         "projectName": "Api",
-        "projectPath": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
-        "packagesPath": "C:\\Users\\Alrowad\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\obj\\",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
+        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Alrowad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -63,10 +56,16 @@
               "version": "[8.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
               "target": "Package",
               "version": "[8.0.10, )"
             },
@@ -87,6 +86,10 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )"
+            },
+            "OWASPZAPDotNetAPI": {
+              "target": "Package",
+              "version": "[2.12.0, )"
             },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
@@ -128,7 +131,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

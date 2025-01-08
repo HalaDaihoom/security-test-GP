@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 using Api.Helpers;
 using Api.Models;
 using Api.Services;
@@ -87,6 +88,13 @@ builder.Services.AddDbContext<ApiContext>(options =>
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("Api"))
     )
 );
+
+// Add services to the container.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    });
 
 // Ensure unauthorized response instead of redirecting to login
 builder.Services.ConfigureApplicationCookie(options =>

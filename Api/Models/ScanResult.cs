@@ -13,10 +13,10 @@ namespace Api.Models
     public int RequestId { get; set; } 
 
     [ForeignKey("Vulnerability")]
-    public int VulnerabilityId { get; set; } 
-    public string Severity { get; set; } 
+    public int? VulnerabilityId { get; set; } 
+    public string? Severity { get; set; } 
 
-    public string Details { get; set; } 
+    public string? Details { get; set; } 
 
 
     public ScanRequest? ScanRequest { get; set; } 

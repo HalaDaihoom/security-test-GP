@@ -1308,7 +1308,7 @@
           "Mono.TextTemplating": "2.2.1"
         },
         "compile": {
-          "lib/net8.0/Microsoft.EntityFrameworkCore.Design.dll": {
+          "lib/net8.0/_._": {
             "related": ".xml"
           }
         },
@@ -2030,6 +2030,15 @@
         },
         "runtime": {
           "lib/netstandard2.0/NuGet.Versioning.dll": {}
+        }
+      },
+      "OWASPZAPDotNetAPI/2.12.0": {
+        "type": "package",
+        "compile": {
+          "lib/OWASPZAPDotNetAPI.dll": {}
+        },
+        "runtime": {
+          "lib/OWASPZAPDotNetAPI.dll": {}
         }
       },
       "Pomelo.EntityFrameworkCore.MySql/8.0.2": {
@@ -6465,6 +6474,20 @@
         "nuget.versioning.nuspec"
       ]
     },
+    "OWASPZAPDotNetAPI/2.12.0": {
+      "sha512": "cuQbnTtIs0dk54T/MX/ahDKHiiudQiHAbTr+eXTir7W+Y9fi5CQ/e2s3e+z+ib+oFTijSPDa5tOrIgq3TeNJ6Q==",
+      "type": "package",
+      "path": "owaspzapdotnetapi/2.12.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "buildnugetpackage.bat",
+        "lib/OWASPZAPDotNetAPI.dll",
+        "nuget.exe",
+        "owaspzapdotnetapi.2.12.0.nupkg.sha512",
+        "owaspzapdotnetapi.nuspec"
+      ]
+    },
     "Pomelo.EntityFrameworkCore.MySql/8.0.2": {
       "sha512": "XjnlcxVBLnEMbyEc5cZzgZeDyLvAniACZQ04W1slWN0f4rmfNzl98gEMvHnFH0fMDF06z9MmgGi/Sr7hJ+BVnw==",
       "type": "package",
@@ -7560,10 +7583,12 @@
       "Microsoft.EntityFrameworkCore >= 8.0.10",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.10",
       "Microsoft.EntityFrameworkCore.InMemory >= 8.0.10",
+      "Microsoft.EntityFrameworkCore.Relational >= 8.0.10",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.10",
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 8.0.6",
       "Moq >= 4.20.72",
       "Newtonsoft.Json >= 13.0.3",
+      "OWASPZAPDotNetAPI >= 2.12.0",
       "Pomelo.EntityFrameworkCore.MySql >= 8.0.2",
       "Swashbuckle.AspNetCore >= 6.9.0",
       "System.IdentityModel.Tokens.Jwt >= 8.2.0",
@@ -7572,32 +7597,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Alrowad\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Admin\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
       "projectName": "Api",
-      "projectPath": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
-      "packagesPath": "C:\\Users\\Alrowad\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Alrowad\\Desktop\\New folder\\security-test-GP\\Api\\obj\\",
+      "projectPath": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\Api.csproj",
+      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Admin\\Desktop\\New folder\\security-test-GP\\Api\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Alrowad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -7634,10 +7651,16 @@
             "version": "[8.0.10, )"
           },
           "Microsoft.EntityFrameworkCore.Design": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
             "target": "Package",
             "version": "[8.0.10, )"
           },
           "Microsoft.EntityFrameworkCore.InMemory": {
+            "target": "Package",
+            "version": "[8.0.10, )"
+          },
+          "Microsoft.EntityFrameworkCore.Relational": {
             "target": "Package",
             "version": "[8.0.10, )"
           },
@@ -7658,6 +7681,10 @@
           "Newtonsoft.Json": {
             "target": "Package",
             "version": "[13.0.3, )"
+          },
+          "OWASPZAPDotNetAPI": {
+            "target": "Package",
+            "version": "[2.12.0, )"
           },
           "Pomelo.EntityFrameworkCore.MySql": {
             "target": "Package",
@@ -7699,8 +7726,20 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'OWASPZAPDotNetAPI 2.12.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
+      "libraryId": "OWASPZAPDotNetAPI",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }
