@@ -314,6 +314,7 @@ namespace Api.Controllers
     
 
 
+<<<<<<< HEAD
 //     // [HttpGet("scanners/automatic-scanner/scan-results")]
 //     // public async Task<IActionResult> GetScanResults([FromQuery] string scanId, CancellationToken cancellationToken)
 //     // {
@@ -551,3 +552,38 @@ namespace Api.Controllers
 // }
 // }
 
+=======
+    [HttpGet("scanners/automatic-scanner/scan-results")]
+    public async Task<IActionResult> GetScanResults([FromQuery] string scanId, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"Received request with scanId: {scanId}"); // Log incoming scanId
+        if (string.IsNullOrEmpty(scanId))
+            return BadRequest("Scan ID is required.");
+
+        try
+        {
+            string scanResults = await _zapService.GetScanResultsAsync(scanId, cancellationToken);
+            var zapAlerts = JsonConvert.DeserializeObject<ZapAlertsResponse>(scanResults);
+            return Ok(new { Message = "The report completed successfully", Results = zapAlerts.Alerts });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}"); // Log exception
+            return StatusCode(500, $"Error retrieving scan results: {ex.Message}");
+        }
+    }
+    
+
+
+
+
+    
+
+
+
+
+    }
+
+
+}
+>>>>>>> 186a1c20f28d03b6fb3ee6297c38fd8634e30b20

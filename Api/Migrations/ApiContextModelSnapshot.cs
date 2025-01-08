@@ -130,8 +130,13 @@ namespace Api.Migrations
                     b.Property<int>("WebsiteId")
                         .HasColumnType("int");
 
+<<<<<<< HEAD
                     b.Property<int>("ZAPScanId")
                         .HasColumnType("int");
+=======
+                    b.Property<string>("ZAPScanId")
+                        .HasColumnType("longtext");
+>>>>>>> 186a1c20f28d03b6fb3ee6297c38fd8634e30b20
 
                     b.HasKey("RequestId");
 

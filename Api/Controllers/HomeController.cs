@@ -12,8 +12,8 @@ namespace Api.Controllers
 {
    
    // [Authorize ] 
-    [Route("/")]
-    [ApiController]
+    [Route("api/[controller]")]
+     [ApiController]
 
     public class HomeController : ControllerBase
     {
@@ -72,7 +72,7 @@ namespace Api.Controllers
 
        
         [Authorize(Roles = "User")]
-        [HttpGet("home")]
+        [HttpGet("protected")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });
@@ -83,3 +83,6 @@ namespace Api.Controllers
 
     }
 }
+
+
+
