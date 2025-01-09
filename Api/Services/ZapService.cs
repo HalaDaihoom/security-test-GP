@@ -10,7 +10,7 @@ public class ZapService
     private readonly HttpClient _httpClient;
     private const string ApiKey = "gp7ihhmfhpjikk6clu1uhm3519";
 
-    public ZapService(HttpClient httpClient)
+  public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri("http://localhost:8080"); // Set to ZAP's actual base address
