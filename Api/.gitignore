@@ -1,0 +1,62 @@
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+
+# Build folders
+bin/
+obj/
+out/
+
+# Compiled files
+*.exe
+*.dll
+*.pdb
+*.cache
+*.ilk
+*.log
+*.map
+*.obj
+*.tmp
+*.vsix
+*.tlog
+*.tlb
+*.tli
+*.resources.dll
+*.res
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Rider files
+.idea/
+*.sln.iml
+
+# dotCover
+*.dcov
+
+# Backup and temporary files
+*.bak
+*.swp
+*.orig
+*.tmp
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Other
+*.vsixmanifest
+*.userprefs
