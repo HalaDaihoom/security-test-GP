@@ -22,9 +22,6 @@ namespace Api.Models
 
     public DateTime? CompletedAt { get; set; } 
 
-    public int ZAPScanId { get; set; }  // <-- This line is missing in your class
-
-
     [ForeignKey("Vulnerability")]
     public int? VulnerabilityId { get; set; } 
     public Vulnerability? Vulnerability { get; set; } 
