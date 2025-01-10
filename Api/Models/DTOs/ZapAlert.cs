@@ -1,9 +1,10 @@
 namespace Api.DTOs
 {
-    public class ZapAlertsResponse
-{
-    public List<ZapAlert> Alerts { get; set; }
-}
+    public class ZapAlertsDtoResponse
+    {
+        public List<ZapAlert> Alerts { get; set; }
+    }
+
     public class ZapAlert
     {
         public string Alert { get; set; } // The type of vulnerability, e.g., "SQL Injection"

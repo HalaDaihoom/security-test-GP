@@ -14,7 +14,7 @@ namespace Api.Models
     [ForeignKey("Website")]
     public int WebsiteId { get; set; } 
     
-    public string? ZAPScanId { get; set; } // To track ZAP scans
+    public int? ZAPScanId { get; set; } // To track ZAP scans
 
     public string Status { get; set; } 
 
