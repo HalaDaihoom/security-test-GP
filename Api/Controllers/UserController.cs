@@ -159,6 +159,27 @@ public async Task<IActionResult> GetScanResults([FromQuery] int scanId, Cancella
         return StatusCode(500, "Failed to retrieve scan results.");
     }
 }
+[HttpGet("scanners/history")]
+public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
+{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId))
+        return Unauthorized("User ID not found.");
+
+    var scanHistory = await _context.ScanRequests
+        .Include(sr => sr.Website)
+        .Where(sr => sr.UserId == userId)
+        .OrderByDescending(sr => sr.StartedAt)
+        .Select(sr => new
+        {
+            sr.Website.Url,
+            sr.StartedAt,
+            sr.ZAPScanId
+        })
+        .ToListAsync(cancellationToken);
+
+    return Ok(scanHistory);
+}
 
     }
 }
