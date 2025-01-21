@@ -27,19 +27,20 @@ namespace Api.Controllers
         }
        
 
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+       [HttpPost("register")]
+public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
 
-            var result = await _authService.RegisterAsync(model);
+    var result = await _authService.RegisterAsync(model);
 
-            if (!result.IsAuthenticated)
-                return BadRequest(result.Message);
+    if (!result.IsAuthenticated)
+        return BadRequest(result.Message);
 
-            return Ok(result);
-        }
+    return Ok(result);
+}
+
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] TokenRequestModel model)
