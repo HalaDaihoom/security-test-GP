@@ -13,6 +13,11 @@ using Api.Services;
 
 namespace Api.Controllers
 {
+
+        /// <summary>
+         /// Controller for handling user-related operations such as vulnerability scanning and history retrieval.
+        /// </summary>
+
     [Authorize(Roles = "User")]
     [Route("api/")]
     [ApiController]
@@ -31,7 +36,30 @@ namespace Api.Controllers
             _logger = logger;
         }
 
-       [HttpPost("scanners/automatic-scanner")]
+
+
+ /// <summary>
+        /// Initiates an automatic vulnerability scan for a given website URL.
+        /// </summary>
+        /// <remarks>
+        /// **URL**: `POST /api/scanners/automatic-scanner`  
+        /// **Purpose**:  
+        /// - Initiates an automatic vulnerability scan using ZAP.  
+        /// - Associates the scan with the authenticated user.  
+        /// - Performs a spider crawl followed by an active vulnerability scan.  
+        /// - Saves the scan request and results in the database.  
+        ///
+        /// **Request Body**:  
+        /// A `Website` instance with the following fields:  
+        /// - `Url` (string, required): The website URL to scan.  
+        ///
+        /// **Responses**:  
+        /// - `200 OK`: Scan completed successfully with a redirect URL to view the results.  
+        /// - `400 Bad Request`: Invalid input or malformed URL.  
+        /// - `401 Unauthorized`: User is not authenticated.  
+        /// - `500 Internal Server Error`: Error during the scan process.  
+        /// </remarks>
+[HttpPost("scanners/automatic-scanner")]
 public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
 {
     if (model == null || !ModelState.IsValid)
@@ -111,7 +139,23 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
         return StatusCode(500, "An error occurred during the scan process.");
     }
 }
-
+ /// <summary>
+        /// Retrieves the results of a completed scan based on a scan ID.
+        /// </summary>
+        /// <remarks>
+        /// **URL**: `GET /api/scanners/automatic-scanner/scan-results`  
+        /// **Purpose**:  
+        /// - Fetches scan results from ZAP for a given scan ID.  
+        /// - Parses and saves the results in the database if not already present.  
+        ///
+        /// **Query Parameters**:  
+        /// - `scanId` (int, required): The ID of the scan to retrieve results for.  
+        ///
+        /// **Responses**:  
+        /// - `200 OK`: Scan results retrieved successfully, with details of vulnerabilities (if any).  
+        /// - `404 Not Found`: No scan found for the provided ID.  
+        /// - `500 Internal Server Error`: Error while retrieving scan results.  
+        /// </remarks>
 [HttpGet("scanners/automatic-scanner/scan-results")]
 public async Task<IActionResult> GetScanResults([FromQuery] int scanId, CancellationToken cancellationToken)
 {
@@ -159,6 +203,20 @@ public async Task<IActionResult> GetScanResults([FromQuery] int scanId, Cancella
         return StatusCode(500, "Failed to retrieve scan results.");
     }
 }
+
+        /// <summary>
+        /// Retrieves the scan history of the authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// **URL**: `GET /api/scanners/history`  
+        /// **Purpose**:  
+        /// - Fetches all scans performed by the authenticated user.  
+        /// - Returns details such as the website URL, start time, and ZAP scan ID.  
+        ///
+        /// **Responses**:  
+        /// - `200 OK`: Scan history retrieved successfully.  
+        /// - `401 Unauthorized`: User is not authenticated.  
+        /// </remarks>
 [HttpGet("scanners/history")]
 public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
 {
