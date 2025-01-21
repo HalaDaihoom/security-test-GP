@@ -20,7 +20,7 @@ namespace Api.Models
         public string Password { get; set; }
          public string? Gender { get; set; }
 
-         public byte[]? Image { get; set; }
+         public IFormFile? Image { get; set; }
 
     }
 }
