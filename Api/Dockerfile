@@ -12,7 +12,7 @@ RUN dotnet restore
 COPY . ./
 
 # Build the application
-RUN dotnet publish -c Release -o out
+RUN dotnet restore --verbosity detailed
 
 # Use the .NET 8 runtime image (specific version) to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.0
