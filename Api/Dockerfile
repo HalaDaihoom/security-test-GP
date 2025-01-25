@@ -1,21 +1,20 @@
-# Use the official .NET 8.0 SDK image for the build phase
+# Use the official .NET 8 SDK image
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy the .csproj file first for restore
+# Copy and restore project dependencies
 COPY *.csproj ./
-RUN dotnet restore --verbosity detailed
+RUN dotnet restore
 
-# Copy the rest of the source code
-COPY . . 
-
-# Build and publish the application
+# Copy the rest of the project files and build the app
+COPY . ./
 RUN dotnet publish -c Release -o out
 
-# Use the official .NET 8.0 ASP.NET runtime image for the final image
+# Use the runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out .
 
-# Set the entry point for running the app
-ENTRYPOINT ["dotnet", "YourAppName.dll"]
+# Expose the app on port 8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "YourProjectName.dll"]
