@@ -14,10 +14,12 @@
           "Microsoft.EntityFrameworkCore": "8.0.10",
           "Microsoft.EntityFrameworkCore.Design": "8.0.10",
           "Microsoft.EntityFrameworkCore.InMemory": "8.0.10",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.10",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.10",
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.6",
           "Moq": "4.20.72",
           "Newtonsoft.Json": "13.0.3",
+          "OWASPZAPDotNetAPI": "2.12.0",
           "Pomelo.EntityFrameworkCore.MySql": "8.0.2",
           "Swashbuckle.AspNetCore": "6.9.0",
           "System.IdentityModel.Tokens.Jwt": "8.2.0",
@@ -1738,6 +1740,14 @@
           }
         }
       },
+      "OWASPZAPDotNetAPI/2.12.0": {
+        "runtime": {
+          "lib/OWASPZAPDotNetAPI.dll": {
+            "assemblyVersion": "2.12.0.0",
+            "fileVersion": "2.12.0.0"
+          }
+        }
+      },
       "Pomelo.EntityFrameworkCore.MySql/8.0.2": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "8.0.10",
@@ -2946,6 +2956,13 @@
       "sha512": "sha512-v/GGlIj2dd7svplFmASWEueu62veKW0MrMtBaZ7QG8aJTSGv2yE+pgUGhXRcQ4nxNOEq/wLBrz1vkth/1SND7A==",
       "path": "nuget.versioning/6.11.0",
       "hashPath": "nuget.versioning.6.11.0.nupkg.sha512"
+    },
+    "OWASPZAPDotNetAPI/2.12.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cuQbnTtIs0dk54T/MX/ahDKHiiudQiHAbTr+eXTir7W+Y9fi5CQ/e2s3e+z+ib+oFTijSPDa5tOrIgq3TeNJ6Q==",
+      "path": "owaspzapdotnetapi/2.12.0",
+      "hashPath": "owaspzapdotnetapi.2.12.0.nupkg.sha512"
     },
     "Pomelo.EntityFrameworkCore.MySql/8.0.2": {
       "type": "package",

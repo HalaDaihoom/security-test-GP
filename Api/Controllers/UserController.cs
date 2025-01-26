@@ -77,7 +77,7 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
 
         // Wait for scan to complete
         string scanStatus;
-        const int maxRetries = 120;
+        const int maxRetries = 180;
         int retries = 0;
         do
         {
