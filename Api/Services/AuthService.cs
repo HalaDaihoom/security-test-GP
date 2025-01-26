@@ -41,17 +41,35 @@ namespace Api.Services
         FirstName = model.FirstName,
         LastName = model.LastName,
         Gender = model.Gender,
-        Image = model.Image
+        
     };
-
+    // Handle Image upload and convert to byte[]
+    if (model.Image != null)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            await model.Image.CopyToAsync(memoryStream);  // Copy file to memory stream
+            user.Image = memoryStream.ToArray();  // Save the byte[] image data
+        }
+    }
     var result = await _userManager.CreateAsync(user, model.Password);
 
     if (!result.Succeeded)
     {
         var errors = string.Empty;
 
-        foreach (var error in result.Errors)
-            errors += $"{error.Description},";
+         foreach (var error in result.Errors)
+        {
+            if (error.Code.Contains("Password"))
+            {
+                // Customize the error message based on password validation failures
+                errors += "Password must meet the following requirements: Minimum 8 characters, at least one uppercase letter, one lowercase letter, one digit, and one special character.";
+            }
+            else
+            {
+                errors += $"{error.Description},";
+            }
+        }
 
         return new AuthModel { Message = errors };
     }
