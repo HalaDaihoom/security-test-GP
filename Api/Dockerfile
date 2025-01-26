@@ -17,4 +17,4 @@ COPY --from=build /app/out .
 
 # Expose the app on port 8080
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "YourProjectName.dll"]
+ENTRYPOINT ["dotnet", "security-test-GP.dll"]
