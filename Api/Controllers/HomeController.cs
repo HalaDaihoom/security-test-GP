@@ -15,7 +15,7 @@ namespace Api.Controllers
    /// <summary>
     /// Controller for handling user authentication and protected resources.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/")]
      [ApiController]
 
     public class HomeController : ControllerBase
@@ -148,7 +148,7 @@ namespace Api.Controllers
         /// - `401 Unauthorized`: User not logged in or does not have the required role.  
         /// </remarks>
         [Authorize(Roles = "User")]
-        [HttpGet("protected")]
+        [HttpGet("home")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });

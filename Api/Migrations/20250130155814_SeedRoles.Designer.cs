@@ -12,12 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApiContext))]
-<<<<<<<< HEAD:Api/Migrations/20250115005347_InitialCreate.Designer.cs
-    [Migration("20250115005347_InitialCreate")]
-========
-    [Migration("20250121104910_InitialCreate")]
->>>>>>>> 72221aafe377ddb3dbfd231995b8ff9d9a09dba5:Api/Migrations/20250121104910_InitialCreate.Designer.cs
-    partial class InitialCreate
+    [Migration("20250130155814_SeedRoles")]
+    partial class SeedRoles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
