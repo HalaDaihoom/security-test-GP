@@ -15,7 +15,7 @@ namespace Api.Controllers
    /// <summary>
     /// Controller for handling user authentication and protected resources.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/")]
      [ApiController]
 
     public class HomeController : ControllerBase
