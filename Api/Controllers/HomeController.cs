@@ -15,7 +15,7 @@ namespace Api.Controllers
    /// <summary>
     /// Controller for handling user authentication and protected resources.
     /// </summary>
-    [Route("api/")]
+    [Route("api")]
      [ApiController]
 
     public class HomeController : ControllerBase
@@ -53,7 +53,7 @@ namespace Api.Controllers
         /// - `200 OK`: Registration successful.  
         /// - `400 Bad Request`: Invalid model or registration failed.  
         /// </remarks>
-        [HttpPost("register")]
+        [HttpPost("users")]
         public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
         {
             if (!ModelState.IsValid)
@@ -100,38 +100,7 @@ namespace Api.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Assign a role to a user.
-        /// </summary>
-        /// <remarks>
-        /// **Route**: `POST /api/home/addrole`  
-        /// **Purpose**:  
-        /// - Assigns a role to a user.  
-        /// - Validates the model using `ModelState`.  
-        /// - Calls the `AddRoleAsync` method from the `IAuthService` to add a role.  
-        ///
-        /// **Request Body**:  
-        /// An `AddRoleModel` instance with the following fields:  
-        /// - `Username` (string, required)  
-        /// - `Role` (string, required)  
-        ///
-        /// **Responses**:  
-        /// - `200 OK`: Role successfully assigned.  
-        /// - `400 Bad Request`: Invalid model or role assignment failed.  
-        /// </remarks>
-        [HttpPost("addrole")]
-        public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _authService.AddRoleAsync(model);
-
-            if (!string.IsNullOrEmpty(result))
-                return BadRequest(result);
-
-            return Ok(model);
-        }
+      
 
        /// <summary>
         /// Retrieve a protected resource.
@@ -148,7 +117,7 @@ namespace Api.Controllers
         /// - `401 Unauthorized`: User not logged in or does not have the required role.  
         /// </remarks>
         [Authorize(Roles = "User")]
-        [HttpGet("home")]
+        [HttpGet("")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });

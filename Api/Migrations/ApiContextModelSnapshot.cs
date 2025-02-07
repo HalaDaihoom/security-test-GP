@@ -164,6 +164,9 @@ namespace Api.Migrations
                     b.Property<int?>("VulnerabilityId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ZAPScanId")
+                        .HasColumnType("int");
+
                     b.HasKey("ResultId");
 
                     b.HasIndex("RequestId");

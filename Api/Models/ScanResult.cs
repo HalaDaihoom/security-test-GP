@@ -12,6 +12,8 @@ namespace Api.Models
     [ForeignKey("ScanRequest")]
     public int RequestId { get; set; } 
 
+
+    public int? ZAPScanId { get; set; }
     [ForeignKey("Vulnerability")]
     public int? VulnerabilityId { get; set; } 
     public string? Severity { get; set; } 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    [Migration("20250122232110_InitialCreate")]
+    [Migration("20250207114846_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -165,6 +165,9 @@ namespace Api.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int?>("VulnerabilityId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ZAPScanId")
                         .HasColumnType("int");
 
                     b.HasKey("ResultId");

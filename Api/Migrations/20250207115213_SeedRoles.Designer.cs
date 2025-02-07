@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    [Migration("20250122232323_SeedRoles")]
+    [Migration("20250207115213_SeedRoles")]
     partial class SeedRoles
     {
         /// <inheritdoc />
@@ -165,6 +165,9 @@ namespace Api.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int?>("VulnerabilityId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ZAPScanId")
                         .HasColumnType("int");
 
                     b.HasKey("ResultId");
