@@ -28,6 +28,17 @@ namespace Api.Controllers
             _authService = authService;
              _context = context ;
         }
+
+         [HttpGet("health")]
+        public IActionResult HealthCheck()
+        {
+            var response = new
+            {
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+
+            return Ok(response);
+        }
        
 /// <summary>
         /// Register a new user.
