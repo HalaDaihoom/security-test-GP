@@ -22,11 +22,13 @@ namespace Api.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ApiContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment; 
 
-        public HomeController(IAuthService authService,ApiContext context)
+        public HomeController(IAuthService authService,ApiContext context, IWebHostEnvironment webHostEnvironment)
         {
             _authService = authService;
-             _context = context ;
+            _context = context ;
+            _webHostEnvironment = webHostEnvironment;
         }
        
 
@@ -67,25 +69,31 @@ namespace Api.Controllers
         /// - `200 OK`: Registration successful.  
         /// - `400 Bad Request`: Invalid model or registration failed.  
         /// </remarks>
-        // [HttpPost("users")]
-        // public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
-        // {
-        //     if (!ModelState.IsValid)
-        //         return BadRequest(ModelState);
-
-        //     var result = await _authService.RegisterAsync(model);
-
-        //     if (!result.IsAuthenticated)
-        //         return BadRequest(result.Message);
-
-        //     return Ok(result);
-        // }
-
-        [HttpPost("users")]
-public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
+        
+    [HttpPost("users")]
+public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
 {
     if (!ModelState.IsValid)
         return BadRequest(ModelState);
+
+    string? imagePath = null; // Explicitly nullable
+
+    // Handle image upload
+    if (model.Image != null)
+    {
+        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+        Directory.CreateDirectory(uploadsFolder); // Ensure the directory exists
+
+        string uniqueFileName = $"{Guid.NewGuid()}_{model.Image.FileName}";
+        imagePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var fileStream = new FileStream(imagePath, FileMode.Create))
+        {
+            await model.Image.CopyToAsync(fileStream);
+        }
+
+        
+    }
 
     var result = await _authService.RegisterAsync(model);
 
@@ -94,6 +102,20 @@ public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
 
     return Ok(result);
 }
+
+//         [HttpPost("users")]
+// public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
+// {
+//     if (!ModelState.IsValid)
+//         return BadRequest(ModelState);
+
+//     var result = await _authService.RegisterAsync(model);
+
+//     if (!result.IsAuthenticated)
+//         return BadRequest(result.Message);
+
+//     return Ok(result);
+// }
 
 
          /// <summary>
