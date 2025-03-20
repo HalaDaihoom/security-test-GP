@@ -59,7 +59,7 @@ namespace Api.Controllers
         /// - `401 Unauthorized`: User is not authenticated.  
         /// - `500 Internal Server Error`: Error during the scan process.  
         /// </remarks>
-[HttpPost("scanners/automatic-scanner")]
+[HttpPost("scan-requests")]
 public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
 {
     if (model == null || !ModelState.IsValid)
@@ -105,7 +105,7 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
 
         // Wait for scan to complete
         string scanStatus;
-        const int maxRetries = 180;
+        const int maxRetries = 120;
         int retries = 0;
         do
         {
@@ -125,12 +125,12 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
         scanRequest.Status = "Completed";
         scanRequest.CompletedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation($"Returning redirectUrl: /scanner/scan-results?scanId={scanId}");
+        _logger.LogInformation($"Returning redirectUrl:/scanner/scan-result?scanId={scanId}");
 
         return Ok(new
         {
             Message = "Scan completed successfully!",
-            redirectUrl = $"/scanner/scan-results?scanId={scanId}"
+            redirectUrl = $"/scanner/scan-result?scanId={scanId}"
         });
     }
     catch (Exception ex)
@@ -156,7 +156,7 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
         /// - `404 Not Found`: No scan found for the provided ID.  
         /// - `500 Internal Server Error`: Error while retrieving scan results.  
         /// </remarks>
-[HttpGet("scanners/automatic-scanner/scan-results")]
+[HttpGet("scan-result")]
 public async Task<IActionResult> GetScanResults([FromQuery] int scanId, CancellationToken cancellationToken)
 {
     try
@@ -181,6 +181,8 @@ public async Task<IActionResult> GetScanResults([FromQuery] int scanId, Cancella
         var resultsToSave = zapAlerts.Alerts.Select(alert => new ScanResult
         {
             RequestId = scanRequest.RequestId,
+            ZAPScanId = scanId, // Store ZAPScanId here
+
             Severity = alert.Risk,
             Details = JsonConvert.SerializeObject(alert)
         }).ToList();
@@ -217,7 +219,7 @@ public async Task<IActionResult> GetScanResults([FromQuery] int scanId, Cancella
         /// - `200 OK`: Scan history retrieved successfully.  
         /// - `401 Unauthorized`: User is not authenticated.  
         /// </remarks>
-[HttpGet("scanners/history")]
+[HttpGet("scan-results")]
 public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
 {
     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

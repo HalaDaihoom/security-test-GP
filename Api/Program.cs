@@ -72,9 +72,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder =>
+        policy =>
         {
-            builder.WithOrigins("https://scan-website-front2.vercel.app/") // Your frontend URL
+            policy.WithOrigins("https://scan-website-front2.vercel.app/")
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });

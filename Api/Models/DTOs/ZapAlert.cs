@@ -12,6 +12,7 @@ namespace Api.DTOs
         public string Risk { get; set; } // The severity: High, Medium, Low
         public string Confidence { get; set; } // The confidence level
         public string Description { get; set; } // A brief description of the vulnerability
+        public string Solution { get; set; }
         // Add more fields as needed based on ZAP's response
     }
 }

@@ -28,18 +28,21 @@ namespace Api.Controllers
             _authService = authService;
              _context = context ;
         }
+       
 
-         [HttpGet("health")]
+    [HttpGet("health")]
         public IActionResult HealthCheck()
         {
             var response = new
             {
-                timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                message = "success"
             };
 
             return Ok(response);
         }
-       
+
+
 /// <summary>
         /// Register a new user.
         /// </summary>
@@ -64,19 +67,34 @@ namespace Api.Controllers
         /// - `200 OK`: Registration successful.  
         /// - `400 Bad Request`: Invalid model or registration failed.  
         /// </remarks>
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+        // [HttpPost("users")]
+        // public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
+        // {
+        //     if (!ModelState.IsValid)
+        //         return BadRequest(ModelState);
 
-            var result = await _authService.RegisterAsync(model);
+        //     var result = await _authService.RegisterAsync(model);
 
-            if (!result.IsAuthenticated)
-                return BadRequest(result.Message);
+        //     if (!result.IsAuthenticated)
+        //         return BadRequest(result.Message);
 
-            return Ok(result);
-        }
+        //     return Ok(result);
+        // }
+
+        [HttpPost("users")]
+public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+    var result = await _authService.RegisterAsync(model);
+
+    if (!result.IsAuthenticated)
+        return BadRequest(result.Message);
+
+    return Ok(result);
+}
+
 
          /// <summary>
         /// Log in an existing user.
@@ -130,19 +148,21 @@ namespace Api.Controllers
         /// - `200 OK`: Role successfully assigned.  
         /// - `400 Bad Request`: Invalid model or role assignment failed.  
         /// </remarks>
-        [HttpPost("addrole")]
-        public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+        /// 
+        
+        // [HttpPost("addrole")]
+        // public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
+        // {
+        //     if (!ModelState.IsValid)
+        //         return BadRequest(ModelState);
 
-            var result = await _authService.AddRoleAsync(model);
+        //     var result = await _authService.AddRoleAsync(model);
 
-            if (!string.IsNullOrEmpty(result))
-                return BadRequest(result);
+        //     if (!string.IsNullOrEmpty(result))
+        //         return BadRequest(result);
 
-            return Ok(model);
-        }
+        //     return Ok(model);
+        // }
 
        /// <summary>
         /// Retrieve a protected resource.
@@ -159,7 +179,7 @@ namespace Api.Controllers
         /// - `401 Unauthorized`: User not logged in or does not have the required role.  
         /// </remarks>
         [Authorize(Roles = "User")]
-        [HttpGet("home")]
+        [HttpGet("")]
         public IActionResult GetProtectedResource()
         {
             return Ok(new { message = "This is a protected resource!" });
