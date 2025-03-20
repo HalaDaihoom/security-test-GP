@@ -74,7 +74,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("https://scan-website-front2.vercel.app/")
+            policy.WithOrigins("https://scan-website-front2.vercel.app",
+            "https://scan-website-front2-72ukhmmcp-hala-daihooms-projects.vercel.app/")
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
