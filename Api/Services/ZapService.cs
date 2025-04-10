@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 public class ZapService
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "2c7h2mfdm618qjln1md6p2ou0c";
+    private const string ApiKey = "4lnic55esp90ftfb1or8pvggd7";
 
     public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("http://localhost:8080"); // Update with actual ZAP address
+        _httpClient.BaseAddress = new Uri("http://localhost:8081"); // Update with actual ZAP address
         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); // Include API key in headers
         _httpClient.Timeout = TimeSpan.FromMinutes(10); // Longer timeout for scans
     }

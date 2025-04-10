@@ -77,7 +77,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("https://scan-website-front2.vercel.app",
             "https://scan-website-front2-72ukhmmcp-hala-daihooms-projects.vercel.app/")
                    .AllowAnyHeader()
-                   .AllowAnyMethod();
+                   .AllowAnyMethod()
+                   .AllowCredentials(); // Allow credentials
         });
 });
 
