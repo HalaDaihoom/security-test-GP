@@ -12,14 +12,14 @@ namespace Api.Models
     [ForeignKey("ScanRequest")]
     public int RequestId { get; set; } 
 
-     public int? ZAPScanId { get; set; } 
 
+    public int? ZAPScanId { get; set; }
     [ForeignKey("Vulnerability")]
     public int? VulnerabilityId { get; set; } 
     public string? Severity { get; set; } 
 
     public string? Details { get; set; } 
-
+    public string? Summary { get; set; } // New property for AI-generated summary
 
     public ScanRequest? ScanRequest { get; set; } 
      public Vulnerability? Vulnerability { get; set; } 

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 public class ZapService
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "4lnic55esp90ftfb1or8pvggd7";
+    private const string ApiKey = "j5ra5bog4jn2rtibdg7lkp1283";
 
     public ZapService(HttpClient httpClient)
     {

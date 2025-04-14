@@ -16,7 +16,7 @@ namespace Api.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     Name = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true, collation: "utf8mb4_unicode_ci"),
                     NormalizedName = table.Column<string>(type: "varchar(191)", maxLength: 191, nullable: true, collation: "utf8mb4_unicode_ci"),
                     ConcurrencyStamp = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
@@ -31,7 +31,7 @@ namespace Api.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     FirstName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false, collation: "utf8mb4_unicode_ci"),
                     LastName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false, collation: "utf8mb4_unicode_ci"),
                     Gender = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
@@ -47,7 +47,7 @@ namespace Api.Migrations
                     PhoneNumber = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
                     PhoneNumberConfirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetime", nullable: true),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true),
                     LockoutEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
@@ -65,7 +65,7 @@ namespace Api.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     VulnerabilityName = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_unicode_ci"),
                     Description = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,7 +79,7 @@ namespace Api.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    RoleId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    RoleId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     ClaimType = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
                     ClaimValue = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
                 },
@@ -101,7 +101,7 @@ namespace Api.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     ClaimType = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
                     ClaimValue = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
                 },
@@ -121,10 +121,10 @@ namespace Api.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
-                    ProviderKey = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    ProviderKey = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     ProviderDisplayName = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci")
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci")
                 },
                 constraints: table =>
                 {
@@ -142,8 +142,8 @@ namespace Api.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
-                    RoleId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci")
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    RoleId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci")
                 },
                 constraints: table =>
                 {
@@ -167,9 +167,9 @@ namespace Api.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
-                    LoginProvider = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
-                    Name = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     Value = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
                 },
                 constraints: table =>
@@ -190,9 +190,9 @@ namespace Api.Migrations
                 {
                     WebsiteId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: true, collation: "utf8mb4_unicode_ci"),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_unicode_ci"),
                     Url = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false, collation: "utf8mb4_unicode_ci"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -211,12 +211,12 @@ namespace Api.Migrations
                 {
                     RequestId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<string>(type: "varchar(95)", nullable: false, collation: "utf8mb4_unicode_ci"),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_unicode_ci"),
                     WebsiteId = table.Column<int>(type: "int", nullable: false),
                     ZAPScanId = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_unicode_ci"),
-                    StartedAt = table.Column<DateTime>(type: "datetime", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    StartedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     VulnerabilityId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -252,7 +252,8 @@ namespace Api.Migrations
                     ZAPScanId = table.Column<int>(type: "int", nullable: true),
                     VulnerabilityId = table.Column<int>(type: "int", nullable: true),
                     Severity = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
-                    Details = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
+                    Details = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci"),
+                    Summary = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_unicode_ci")
                 },
                 constraints: table =>
                 {

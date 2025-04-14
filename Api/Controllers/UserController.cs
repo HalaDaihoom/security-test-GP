@@ -1,15 +1,18 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Api.Models;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Api.DTOs;
 using Api.Services;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+
 
 namespace Api.Controllers
 {
@@ -26,17 +29,18 @@ namespace Api.Controllers
         private readonly IAuthService _authService;
         private readonly ApiContext _context;
         private readonly ZapService _zapService;
-        private readonly IWebHostEnvironment _webHostEnvironment; 
-
         private readonly ILogger<UserController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IAuthService authService, ApiContext context, ZapService zapService,IWebHostEnvironment webHostEnvironment, ILogger<UserController> logger)
+        public UserController(IAuthService authService, ApiContext context, ZapService zapService, ILogger<UserController> logger,IHttpClientFactory httpClientFactory,IConfiguration configuration)
         {
             _authService = authService;
             _context = context;
             _zapService = zapService;
-            _webHostEnvironment = webHostEnvironment;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
 
@@ -62,125 +66,86 @@ namespace Api.Controllers
         /// - `401 Unauthorized`: User is not authenticated.  
         /// - `500 Internal Server Error`: Error during the scan process.  
         /// </remarks>
-
 [HttpPost("scan-requests")]
 public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
 {
-    _logger.LogInformation("Received scan request.");
-
     if (model == null || !ModelState.IsValid)
-    {
-        _logger.LogError("Invalid request received.");
         return BadRequest("Invalid request. Please provide a valid website URL.");
-    }
 
     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(userId))
-    {
-        _logger.LogError("Unauthorized access - User ID not found.");
         return Unauthorized("User ID not found.");
-    }
+
+    model.UserId = userId;
+    model.CreatedAt = DateTime.UtcNow;
+
+    _context.Websites.Add(model);
+    await _context.SaveChangesAsync(cancellationToken);
+
+    var scanRequest = new ScanRequest
+    {
+        UserId = userId,
+        WebsiteId = model.WebsiteId,
+        Status = "In Progress",
+        StartedAt = DateTime.UtcNow
+    };
+
+    _context.ScanRequests.Add(scanRequest);
+    await _context.SaveChangesAsync(cancellationToken);
 
     try
     {
-        _logger.LogInformation($"Starting scan for {model.Url}");
-
+        // Start ZAP Spider
         var spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
-        _logger.LogInformation($"Spider started with ID {spiderId}");
+        string spiderStatus;
+        do
+        {
+            await Task.Delay(5000, cancellationToken);
+            spiderStatus = await _zapService.GetSpiderStatusAsync(spiderId, cancellationToken);
+            _logger.LogInformation($"Spider status: {spiderStatus}");
+        } while (spiderStatus != "100");
 
+        // Start ZAP Scan
         var scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
-        _logger.LogInformation($"Scan started with ID {scanId}");
+        scanRequest.ZAPScanId = scanId;
+        await _context.SaveChangesAsync(cancellationToken);
 
-        return Ok(new { Message = "Scan started!", ScanId = scanId });
+        // Wait for scan to complete
+        string scanStatus;
+        const int maxRetries = 120;
+        int retries = 0;
+        do
+        {
+            await Task.Delay(5000, cancellationToken);
+            scanStatus = await _zapService.GetScanStatusAsync(scanId, cancellationToken);
+            _logger.LogInformation($"Scan status: {scanStatus}");
+            retries++;
+        } while (!scanStatus.Equals("100", StringComparison.OrdinalIgnoreCase) &&
+                 retries < maxRetries);
+
+        if (retries >= maxRetries)
+        {
+            _logger.LogError($"Scan for {scanId} timed out.");
+            return StatusCode(504, "Scan timed out.");
+        }
+
+        scanRequest.Status = "Completed";
+        scanRequest.CompletedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation($"Returning redirectUrl: /scanner/scan-results/{scanId}");
+
+        return Ok(new
+        {
+            Message = "Scan completed successfully!",
+            redirectUrl = $"/scanner/scan-results/{scanId}"
+        });
     }
     catch (Exception ex)
     {
-        _logger.LogError($"Scan failed: {ex.Message}");
-        return StatusCode(500, "Scan failed due to an internal error.");
+        _logger.LogError($"Error during scan: {ex.Message}");
+        return StatusCode(500, "An error occurred during the scan process.");
     }
 }
-
-
-// [HttpPost("scan-requests")]
-// public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
-// {
-//     if (model == null || !ModelState.IsValid)
-//         return BadRequest("Invalid request. Please provide a valid website URL.");
-
-//     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-//     if (string.IsNullOrEmpty(userId))
-//         return Unauthorized("User ID not found.");
-
-//     model.UserId = userId;
-//     model.CreatedAt = DateTime.UtcNow;
-
-//     _context.Websites.Add(model);
-//     await _context.SaveChangesAsync(cancellationToken);
-
-//     var scanRequest = new ScanRequest
-//     {
-//         UserId = userId,
-//         WebsiteId = model.WebsiteId,
-//         Status = "In Progress",
-//         StartedAt = DateTime.UtcNow
-//     };
-
-//     _context.ScanRequests.Add(scanRequest);
-//     await _context.SaveChangesAsync(cancellationToken);
-
-//     try
-//     {
-//         // Start ZAP Spider
-//         var spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
-//         string spiderStatus;
-//         do
-//         {
-//             await Task.Delay(5000, cancellationToken);
-//             spiderStatus = await _zapService.GetSpiderStatusAsync(spiderId, cancellationToken);
-//             _logger.LogInformation($"Spider status: {spiderStatus}");
-//         } while (spiderStatus != "100");
-
-//         // Start ZAP Scan
-//         var scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
-//         scanRequest.ZAPScanId = scanId;
-//         await _context.SaveChangesAsync(cancellationToken);
-
-//         // Wait for scan to complete
-//         string scanStatus;
-//         const int maxRetries = 120;
-//         int retries = 0;
-//         do
-//         {
-//             await Task.Delay(5000, cancellationToken);
-//             scanStatus = await _zapService.GetScanStatusAsync(scanId, cancellationToken);
-//             _logger.LogInformation($"Scan status: {scanStatus}");
-//             retries++;
-//         } while (!scanStatus.Equals("100", StringComparison.OrdinalIgnoreCase) &&
-//                  retries < maxRetries);
-
-//         if (retries >= maxRetries)
-//         {
-//             _logger.LogError($"Scan for {scanId} timed out.");
-//             return StatusCode(504, "Scan timed out.");
-//         }
-
-//         scanRequest.Status = "Completed";
-//         scanRequest.CompletedAt = DateTime.UtcNow;
-//         await _context.SaveChangesAsync(cancellationToken);
-//         _logger.LogInformation($"Returning redirectUrl:/scanner/scan-result?scanId={scanId}");
-
-//         return Ok(new
-//         {
-//             Message = "Scan completed successfully!",
-//             redirectUrl = $"/scanner/scan-result?scanId={scanId}"
-//         });
-//     }
-//     catch (Exception ex)
-//     {
-//         _logger.LogError($"Error during scan: {ex.Message}");
-//         return StatusCode(500, "An error occurred during the scan process.");
-//     }
-// }
  /// <summary>
         /// Retrieves the results of a completed scan based on a scan ID.
         /// </summary>
@@ -198,8 +163,8 @@ public async Task<IActionResult> AutomaticScanner([FromBody] Website model, Canc
         /// - `404 Not Found`: No scan found for the provided ID.  
         /// - `500 Internal Server Error`: Error while retrieving scan results.  
         /// </remarks>
-[HttpGet("scan-result")]
-public async Task<IActionResult> GetScanResults([FromQuery] int scanId, CancellationToken cancellationToken)
+[HttpGet("scan-results/{scanId}")]
+public async Task<IActionResult> GetScanResults([FromRoute] int scanId, CancellationToken cancellationToken)
 {
     try
     {
@@ -223,7 +188,7 @@ public async Task<IActionResult> GetScanResults([FromQuery] int scanId, Cancella
         var resultsToSave = zapAlerts.Alerts.Select(alert => new ScanResult
         {
             RequestId = scanRequest.RequestId,
-            ZAPScanId = scanId, // Store ZAPScanId here
+                ZAPScanId = scanId, // Store ZAPScanId here
 
             Severity = alert.Risk,
             Details = JsonConvert.SerializeObject(alert)
@@ -282,6 +247,134 @@ public async Task<IActionResult> GetScanHistory(CancellationToken cancellationTo
 
     return Ok(scanHistory);
 }
+
+
+
+
+ [HttpPost("scanners/summarize-scan-results")]
+        public async Task<IActionResult> SummarizeScanResults([FromBody] SummarizeScanResults request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Retrieve scan results from the database
+                var scanResults = await _context.ScanResults
+                    .Where(r => r.ZAPScanId == request.ScanId)
+                    .ToListAsync(cancellationToken);
+
+                if (scanResults == null || !scanResults.Any())
+                    return NotFound("No scan results found for the provided ID.");
+
+                // Combine all scan results into a string for summarization
+                var resultsText = string.Join("\n", scanResults.Select(r => $"- Severity: {r.Severity}, Details: {r.Details}"));
+
+                // Call Claude API to summarize the scan results
+                var summary = await SummarizeWithGemini(resultsText, cancellationToken);
+
+
+                // If summary is null or empty, return a friendly message
+                if (string.IsNullOrEmpty(summary))
+                {
+                    return StatusCode(500, "Failed to generate a summary due to an API error.");
+                }
+
+                // Return the generated summary
+                _logger.LogInformation($"Generated Summary: {summary}");
+                return Ok(new { Summary = summary });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error summarizing scan results: {ex.Message}");
+                return StatusCode(500, "An error occurred while summarizing scan results.");
+            }
+        }
+
+       private async Task<string> SummarizeWithGemini(string inputText, CancellationToken cancellationToken)
+{
+    try
+    {
+        var apiKey = _configuration["Gemini:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+            throw new InvalidOperationException("Gemini API key is not configured.");
+
+        var httpClient = _httpClientFactory.CreateClient();
+
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = $"You are a cybersecurity analyst. Summarize these scan results:\n{inputText}" }
+                    }
+                }
+            }
+        };
+
+        var jsonRequest = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+        var response = await httpClient.PostAsync(
+            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={apiKey}",
+            content,
+            cancellationToken
+        );
+
+        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError($"Gemini API call failed with status {response.StatusCode}: {responseString}");
+            return null;
+        }
+
+        var responseObject = JsonConvert.DeserializeObject<dynamic>(responseString);
+        var summary = responseObject?.candidates?[0]?.content?.parts?[0]?.text?.ToString();
+
+        return string.IsNullOrEmpty(summary) ? null : summary;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError($"Error calling Gemini API: {ex.Message}");
+        return null;
+    }
+}
+
+  
+
+    // Endpoint to Retrieve Summary from DB
+    [HttpGet("scanners/summary")]
+    public async Task<IActionResult> GetSummary([FromQuery] int scanId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var scanResult = await _context.ScanResults
+                .Where(r => r.RequestId == scanId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (scanResult == null || string.IsNullOrEmpty(scanResult.Summary))
+                return NotFound("Summary not available.");
+
+            return Ok(new { Summary = scanResult.Summary });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error retrieving summary: {ex.Message}");
+            return StatusCode(500, "Failed to retrieve summary.");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     }
 }

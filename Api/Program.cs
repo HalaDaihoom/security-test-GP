@@ -157,4 +157,3 @@ catch (Exception ex)
     app.Logger.LogCritical(ex, "Application startup failed!");
     throw;
 }
-
