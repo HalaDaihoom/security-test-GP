@@ -13,7 +13,8 @@ public class ZapService
     public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("http://localhost:8081"); // Update with actual ZAP address
+        //_httpClient.BaseAddress = new Uri("http://localhost:8081"); // Update with actual ZAP address
+        _httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("ZAP_BASE_URL") ?? "http://localhost:8081");
         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); // Include API key in headers
         _httpClient.Timeout = TimeSpan.FromMinutes(10); // Longer timeout for scans
     }

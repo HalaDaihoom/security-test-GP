@@ -124,6 +124,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Services for authorization
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddHttpClient<ZapService>(); // Ensure this line is here
 
 var app = builder.Build();
