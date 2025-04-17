@@ -1,47 +1,26 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  backend:
+  zap:
     build:
-      context: ./Api
-    environment:
-      - DB_CONNECTION_STRING=Server=mysql;Database=Api;User=root;Password=123456789;
+      context: ./Zap
     ports:
-      - "5000:5000"
-    depends_on:
-      mysql:
-        condition: service_healthy  # Wait until MySQL passes healthcheck
-    restart: always
+      - "8081:8081"
+    networks:
+      - zapnet
 
-  frontend:
+  dotnetapi:
     build:
-      context: ./frontend-GP
-    environment:
-      - NEXT_PUBLIC_API_URL=http://backend:5000  # Frontend pointing to backend API
+      context: ./YourDotNetApi
     ports:
-      - "3000:3000"
+      - "5000:80"
+    networks:
+      - zapnet
     depends_on:
-      - backend
-    restart: always
-
-  mysql:
-    image: mysql:8.0
-    container_name: security-test-gp-mysql-1
+      - zap
     environment:
-      MYSQL_ROOT_PASSWORD: 123456789  # Secure root password
-      MYSQL_DATABASE: Api  # Default database to be created
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p123456789 || exit 1"]
-      interval: 10s
-      retries: 10
-      start_period: 60s
-      timeout: 5s
+      - ZAP_BASE_URL=http://zap:8081
 
-    restart: always
-
-volumes:
-  mysql_data:
+networks:
+  zapnet:
+    driver: bridge
