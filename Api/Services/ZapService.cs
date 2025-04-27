@@ -8,15 +8,14 @@ using Newtonsoft.Json;
 public class ZapService
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "4lnic55esp90ftfb1or8pvggd7";
+    private const string ApiKey = "g4uemp8bue65asn9urpov1lc2v";
 
     public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        //_httpClient.BaseAddress = new Uri("http://localhost:8081"); // Update with actual ZAP address
-        _httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("ZAP_BASE_URL") ?? "http://localhost:8081");
-        _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); // Include API key in headers
-        _httpClient.Timeout = TimeSpan.FromMinutes(10); // Longer timeout for scans
+        _httpClient.BaseAddress = new Uri("https://ddc3-156-209-21-195.ngrok-free.app"); 
+        _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); 
+        _httpClient.Timeout = TimeSpan.FromMinutes(10); 
     }
 
     public async Task<string> StartSpiderAsync(string url, CancellationToken cancellationToken = default)
