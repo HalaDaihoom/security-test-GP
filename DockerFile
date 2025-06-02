@@ -1,24 +1,18 @@
-# Use the official .NET 8 runtime as the base image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-# Use the .NET 8 SDK to build the application
+# Stage 1: Build using .NET 8 SDK
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the project file and restore dependencies
+# Copy csproj and restore
 COPY ["Api/Api.csproj", "Api/"]
 RUN dotnet restore "Api/Api.csproj"
 
-# Copy everything else and build the project
+# Copy rest of the code and publish
 COPY . .
 WORKDIR "/src/Api"
-RUN dotnet build "Api.csproj" -c Release -o /app/build
 RUN dotnet publish "Api.csproj" -c Release -o /app/publish
 
-# Final runtime image
-FROM base AS final
+# Stage 2: Run app using .NET 8 runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Api.dll"]
