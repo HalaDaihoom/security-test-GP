@@ -71,7 +71,7 @@ namespace Api.Controllers
         /// </remarks>
         
     [HttpPost("users")]
-public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
+public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
 {
     if (!ModelState.IsValid)
         return BadRequest(ModelState);

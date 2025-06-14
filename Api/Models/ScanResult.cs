@@ -19,7 +19,7 @@ namespace Api.Models
     public string? Severity { get; set; } 
 
     public string? Details { get; set; } 
-
+    public string? Summary { get; set; } // New property for AI-generated summary
 
     public ScanRequest? ScanRequest { get; set; } 
      public Vulnerability? Vulnerability { get; set; } 

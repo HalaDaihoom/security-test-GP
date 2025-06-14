@@ -13,9 +13,9 @@ public class ZapService
     public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://ddc3-156-209-21-195.ngrok-free.app"); 
+        _httpClient.BaseAddress = new Uri("https://c821-196-155-204-161.ngrok-free.app"); 
         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); 
-        _httpClient.Timeout = TimeSpan.FromMinutes(10); 
+        _httpClient.Timeout = TimeSpan.FromMinutes(20); 
     }
 
     public async Task<string> StartSpiderAsync(string url, CancellationToken cancellationToken = default)

@@ -35,7 +35,6 @@ namespace Api.Models
                 entity.Property(r => r.NormalizedName).HasMaxLength(191);
             });
 
-            // ✅ Set the database collation to UTF8MB4 (for emoji and full Unicode support)
             modelBuilder.UseCollation("utf8mb4_unicode_ci");
         }
     }

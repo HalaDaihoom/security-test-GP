@@ -16,6 +16,7 @@ using System.Text.Json.Serialization;
 using Api.Helpers;
 using Api.Models;
 using Api.Services;
+using Api.Services.Scanners;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,10 +76,11 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("https://scan-website-front2.vercel.app",
-            "https://scan-website-front2-72ukhmmcp-hala-daihooms-projects.vercel.app/")
+            "https://scan-website-front2-72ukhmmcp-hala-daihooms-projects.vercel.app/",
+            "http://localhost:3000" )
                    .AllowAnyHeader()
                    .AllowAnyMethod()
-                   .AllowCredentials(); // Allow credentials
+                   .AllowCredentials(); 
         });
 });
 
@@ -127,14 +129,30 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddHttpClient<ZapService>(); // Ensure this line is here
 
+// add to subdomain takeover
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.AddEventSourceLogger();
+});
+
+builder.Services.AddHttpClient<SubdomainTakeoverScanner>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("SubdomainScanner/1.0");
+});
+// Register the scanner
+builder.Services.AddScoped<SubdomainTakeoverScanner>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 
 app.UseHttpsRedirection();
