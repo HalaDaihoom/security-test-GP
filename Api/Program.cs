@@ -93,14 +93,20 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Database configuration
-
-
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("Api"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("Api"))
-    )
-);
+        new MySqlServerVersion(new Version(8, 0, 21)),
+        mysqlOptions =>
+        {
+            mysqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+        }));
+// builder.Services.AddDbContext<ApiContext>(options =>
+//     options.UseMySql(
+//         builder.Configuration.GetConnectionString("Api"),
+//         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("Api"))
+//     )
+// );
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -127,7 +133,11 @@ builder.WebHost.ConfigureKestrel(options =>
 // Services for authorization
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddHttpClient<ZapService>(); // Ensure this line is here
+builder.Services.AddHttpClient<ZapService>();
+builder.Services.AddHttpClient<SubdomainExtractorService>();
+builder.Services.AddHttpClient<SubdomainTakeoverScanner>();
+
+ // Ensure this line is here
 
 // add to subdomain takeover
 builder.Services.AddLogging(logging =>

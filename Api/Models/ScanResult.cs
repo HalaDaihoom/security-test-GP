@@ -7,22 +7,26 @@ namespace Api.Models
     public class ScanResult
     {
         [Key]
-    public int ResultId { get; set; } 
+        public int ResultId { get; set; }
 
-    [ForeignKey("ScanRequest")]
-    public int RequestId { get; set; } 
+        [ForeignKey("ScanRequest")]
+        public int RequestId { get; set; }
 
-     public int? ZAPScanId { get; set; } 
+        public int? ZAPScanId { get; set; }
 
-    [ForeignKey("Vulnerability")]
-    public int? VulnerabilityId { get; set; } 
-    public string? Severity { get; set; } 
+        [ForeignKey("Vulnerability")]
+        public int? VulnerabilityId { get; set; }
+        public string? Severity { get; set; }
 
-    public string? Details { get; set; } 
-    public string? Summary { get; set; } // New property for AI-generated summary
+        public string? Details { get; set; }
+        public string? Summary { get; set; } // New property for AI-generated summary
 
-    public ScanRequest? ScanRequest { get; set; } 
-     public Vulnerability? Vulnerability { get; set; } 
+        public string? PayloadUsed { get; set; } // New field
+        public string? VulnerabilityType { get; set; } // New field
+
+        public ScanRequest? ScanRequest { get; set; }
+        public Vulnerability? Vulnerability { get; set; } 
+     
 
     }
     

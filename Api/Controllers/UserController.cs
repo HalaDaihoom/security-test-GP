@@ -13,6 +13,8 @@ using Api.Services;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Text;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 
 namespace Api.Controllers
