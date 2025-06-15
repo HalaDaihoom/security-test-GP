@@ -137,7 +137,14 @@ builder.Services.AddHttpClient<ZapService>();
 builder.Services.AddHttpClient<SubdomainExtractorService>();
 builder.Services.AddHttpClient<SubdomainTakeoverScanner>();
 
- // Ensure this line is here
+// Register HttpClient for SqlInjectionScanner
+builder.Services.AddHttpClient<SqlInjectionScanner>();
+
+//builder.Services.AddHttpClient<ModernSqlInjectionScanner>();
+
+
+// Register SqlInjectionScanner
+builder.Services.AddScoped<SqlInjectionScanner>();
 
 // add to subdomain takeover
 builder.Services.AddLogging(logging =>
