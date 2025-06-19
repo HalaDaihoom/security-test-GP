@@ -13,7 +13,7 @@ public class ZapService
     public ZapService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://b3e0-156-209-109-220.ngrok-free.app"); 
+        _httpClient.BaseAddress = new Uri("https://2217-156-209-9-183.ngrok-free.app"); 
         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); 
         _httpClient.Timeout = TimeSpan.FromMinutes(20); 
     }

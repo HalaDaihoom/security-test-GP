@@ -75,14 +75,15 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("https://scan-website-front2.vercel.app",
-            "https://scan-website-front2-72ukhmmcp-hala-daihooms-projects.vercel.app/",
+            policy.WithOrigins("https://scan-website-front.vercel.app",
+            "https://scan-website-front-hala-daihooms-projects.vercel.app",
             "http://localhost:3000" )
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials(); 
         });
 });
+
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
