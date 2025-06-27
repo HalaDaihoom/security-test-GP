@@ -43,15 +43,25 @@ namespace Api.Services
         Gender = model.Gender,
         
     };
-    // Handle Image upload and convert to byte[]
-    if (model.Image != null)
-    {
-        using (var memoryStream = new MemoryStream())
-        {
-            await model.Image.CopyToAsync(memoryStream);  // Copy file to memory stream
-            user.Image = memoryStream.ToArray();  // Save the byte[] image data
-        }
-    }
+            // Handle Image upload and convert to byte[]
+            // if (model.Image != null)
+            // {
+            //     using (var memoryStream = new MemoryStream())
+            //     {
+            //         await model.Image.CopyToAsync(memoryStream);  // Copy file to memory stream
+            //         user.Image = memoryStream.ToArray();  // Save the byte[] image data
+            //     }
+            // }
+            // Handle Image upload and convert to byte[]
+            if (model.Image != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await model.Image.CopyToAsync(memoryStream);
+                    user.Image = memoryStream.ToArray();
+                }
+            }
+
     var result = await _userManager.CreateAsync(user, model.Password);
 
     if (!result.Succeeded)

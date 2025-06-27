@@ -57,8 +57,9 @@ namespace Api.Services.Scanners
                     return CreateVulnerabilityResult(
                         "DNS Resolution Failed",
                         "High",
-                        $"DNS lookup failed for {host}: {sex.Message}",
-                        "Subdomain may be available for takeover");
+                        $"DNS failed for {host}: {sex.Message}",
+                        "Possibly unclaimed (No DNS)"
+                    );
                 }
 
                 if (ipAddresses.Length == 0)
@@ -67,7 +68,8 @@ namespace Api.Services.Scanners
                         "DNS Subdomain Takeover",
                         "High",
                         $"Subdomain {host} has no DNS records",
-                        "Vulnerable to DNS subdomain takeover");
+                        "No DNS – Possible Takeover"
+                    );
                 }
 
                 HttpResponseMessage response;
@@ -80,36 +82,184 @@ namespace Api.Services.Scanners
                     return CreateVulnerabilityResult(
                         "Connection Failed",
                         "Medium",
-                        $"Failed to connect to {url}: {hex.Message}",
-                        "Potential service misconfiguration");
+                        $"Connection failed to {url}: {hex.Message}",
+                        "Service unreachable"
+                    );
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
 
                 foreach (var service in _vulnerableServices)
                 {
-                    if (service.Signatures.Any(sig => content.Contains(sig, StringComparison.OrdinalIgnoreCase)))
+                    foreach (var sig in service.Signatures)
                     {
-                        return CreateVulnerabilityResult(
-                            $"{service.Name} Takeover",
-                            "Critical",
-                            $"Subdomain {host} appears vulnerable to {service.Name} takeover",
-                            $"Found {service.Name} takeover signature");
+                        if (content.Contains(sig, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return CreateVulnerabilityResult(
+                                $"{service.Name} Takeover",
+                                "Critical",
+                                $"Subdomain {host} likely vulnerable to {service.Name}",
+                                $"Signature match: {sig}"
+                            );
+                        }
                     }
                 }
 
-                result.Details = $"No vulnerabilities detected for {host}";
-                result.Summary = "Secure subdomain";
-                return result;
+                return new ScanResult
+                {
+                    Summary = "Secure",
+                    Severity = "None",
+                    Details = $"No takeover indicators detected for {host}"
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Scan failed for URL: {Url}", url);
-                result.Details = $"Scan failed: {ex.Message}";
-                result.Summary = "Scan error occurred";
-                return result;
+                _logger.LogError(ex, "Scan failed for {Url}", url);
+                return CreateVulnerabilityResult(
+                    "Scan Error",
+                    "Unknown",
+                    $"Scan error: {ex.Message}",
+                    "Scan could not be completed"
+                );
             }
         }
+
+
+        // public async Task<ScanResult> ScanAsync(string url)
+        // {
+        //     var result = new ScanResult();
+
+        //     try
+        //     {
+        //         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        //             throw new ArgumentException($"Invalid URL format: {url}");
+
+        //         var host = uri.Host;
+        //         _logger.LogInformation("Scanning subdomain: {Host}", host);
+
+        //         IPAddress[] ipAddresses;
+        //         try
+        //         {
+        //             ipAddresses = await Dns.GetHostAddressesAsync(host);
+        //         }
+        //         catch (SocketException sex)
+        //         {
+        //             return CreateVulnerabilityResult(
+        //                 "DNS Resolution Failed",
+        //                 "High",
+        //                 $"DNS lookup failed for {host}: {sex.Message}",
+        //                 "Subdomain may be available for takeover");
+        //         }
+
+        //         if (ipAddresses.Length == 0)
+        //         {
+        //             return CreateVulnerabilityResult(
+        //                 "DNS Subdomain Takeover",
+        //                 "High",
+        //                 $"Subdomain {host} has no DNS records",
+        //                 "Vulnerable to DNS subdomain takeover");
+        //         }
+
+        //         HttpResponseMessage response;
+        //         try
+        //         {
+        //             response = await _httpClient.GetAsync(url);
+        //         }
+        //         catch (HttpRequestException hex)
+        //         {
+        //             return CreateVulnerabilityResult(
+        //                 "Connection Failed",
+        //                 "Medium",
+        //                 $"Failed to connect to {url}: {hex.Message}",
+        //                 "Potential service misconfiguration");
+        //         }
+
+        //         var content = await response.Content.ReadAsStringAsync();
+
+        //         foreach (var service in _vulnerableServices)
+        //         {
+        //             if (service.Signatures.Any(sig => content.Contains(sig, StringComparison.OrdinalIgnoreCase)))
+        //             {
+        //                 return CreateVulnerabilityResult(
+        //                     $"{service.Name} Takeover",
+        //                     "Critical",
+        //                     $"Subdomain {host} appears vulnerable to {service.Name} takeover",
+        //                     $"Found {service.Name} takeover signature");
+        //             }
+        //         }
+
+        //         result.Details = $"No vulnerabilities detected for {host}";
+        //         result.Summary = "Secure subdomain";
+        //         return result;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Scan failed for URL: {Url}", url);
+        //         result.Details = $"Scan failed: {ex.Message}";
+        //         result.Summary = "Scan error occurred";
+        //         return result;
+        //     }
+        // }
+
+        // public async Task<List<SubdomainCheckResult>> CheckSubdomainsAsync(List<string> subdomains)
+        // {
+        //     var results = new List<SubdomainCheckResult>();
+
+        //     foreach (var sub in subdomains)
+        //     {
+        //         bool scanned = false;
+
+        //         foreach (var scheme in new[] { "http", "https" })
+        //         {
+        //             var result = new SubdomainCheckResult
+        //             {
+        //                 Subdomain = sub
+        //             };
+
+        //             try
+        //             {
+        //                 var url = $"{scheme}://{sub}";
+        //                 var uri = new Uri(url);
+        //                 var host = uri.Host;
+
+        //                 var ipAddresses = await Dns.GetHostAddressesAsync(host);
+        //                 result.Status = ipAddresses.Length > 0 ? "Resolved" : "Did Not Resolve";
+        //                 result.IP = ipAddresses.Length > 0 ? ipAddresses[0].ToString() : null;
+
+        //                 if (ipAddresses.Length > 0)
+        //                 {
+        //                     var scan = await ScanAsync(url);
+        //                     result.Summary = scan.Summary;
+        //                     result.Severity = scan.Severity;
+
+        //                     results.Add(result);
+        //                     scanned = true;
+        //                     break; // stop after successful scan
+        //                 }
+        //             }
+        //             catch
+        //             {
+        //                 result.Status = "Did Not Resolve";
+        //                 result.Summary = "Error";
+        //                 result.Severity = "Unknown";
+        //                 results.Add(result);
+        //             }
+        //         }
+
+        //         if (!scanned)
+        //         {
+        //             results.Add(new SubdomainCheckResult
+        //             {
+        //                 Subdomain = sub,
+        //                 Status = "Did Not Resolve",
+        //                 Summary = "All protocols failed",
+        //                 Severity = "Unknown"
+        //             });
+        //         }
+        //     }
+
+        //     return results;
+        // }
 
         public async Task<List<SubdomainCheckResult>> CheckSubdomainsAsync(List<string> subdomains)
         {
@@ -117,40 +267,89 @@ namespace Api.Services.Scanners
 
             foreach (var sub in subdomains)
             {
-                var result = new SubdomainCheckResult
+                bool scanned = false;
+
+                foreach (var scheme in new[] { "http", "https" })
                 {
-                    Subdomain = sub
-                };
-
-                try
-                {
-                    var url = sub.StartsWith("http") ? sub : $"http://{sub}";
-                    var uri = new Uri(url);
-                    var host = uri.Host;
-
-                    var ipAddresses = await Dns.GetHostAddressesAsync(host);
-                    result.Status = ipAddresses.Length > 0 ? "Resolved" : "Did Not Resolve";
-                    result.IP = ipAddresses.Length > 0 ? ipAddresses[0].ToString() : null;
-
-                    if (ipAddresses.Length > 0)
+                    var result = new SubdomainCheckResult
                     {
+                        Subdomain = sub
+                    };
+
+                    try
+                    {
+                        var url = $"{scheme}://{sub}";
+                        var uri = new Uri(url);
+                        var host = uri.Host;
+
+                        IPAddress[] ipAddresses;
+                        try
+                        {
+                            ipAddresses = await Dns.GetHostAddressesAsync(host);
+                        }
+                        catch (SocketException sex)
+                        {
+                            result.Status = "DNS Failed";
+                            result.Summary = "No DNS – Possible Takeover";
+                            result.Severity = "High";
+                            result.Message = $"DNS lookup failed: {sex.Message}";
+                            results.Add(result);
+                            scanned = true;
+                            break;
+                        }
+
+                        if (ipAddresses.Length == 0)
+                        {
+                            result.Status = "No DNS";
+                            result.Summary = "No DNS records – Possible Takeover";
+                            result.Severity = "High";
+                            result.Message = "Subdomain has no DNS records.";
+                            results.Add(result);
+                            scanned = true;
+                            break;
+                        }
+
+                        result.Status = "Resolved";
+                        result.IP = ipAddresses[0].ToString();
+
                         var scan = await ScanAsync(url);
+
                         result.Summary = scan.Summary;
                         result.Severity = scan.Severity;
+                        result.Message = scan.Details;
+                        result.Service = scan.Vulnerability?.VulnerabilityName?.Split(' ')?.FirstOrDefault(); // Ex: "GitHub"
+
+                        results.Add(result);
+                        scanned = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Status = "Error";
+                        result.Summary = "Scan Failed";
+                        result.Severity = "Unknown";
+                        result.Message = $"Exception: {ex.Message}";
+                        results.Add(result);
                     }
                 }
-                catch (Exception ex)
-                {
-                    result.Status = "Did Not Resolve";
-                    result.Summary = "Error";
-                    result.Severity = "Unknown";
-                }
 
-                results.Add(result);
+                if (!scanned)
+                {
+                    results.Add(new SubdomainCheckResult
+                    {
+                        Subdomain = sub,
+                        Status = "Unreachable",
+                        Summary = "All protocols failed",
+                        Severity = "Unknown",
+                        Message = "Could not connect via HTTP or HTTPS"
+                    });
+                }
             }
 
             return results;
         }
+
+
 
         private ScanResult CreateVulnerabilityResult(string name, string severity, string details, string summary)
         {
@@ -174,12 +373,25 @@ namespace Api.Services.Scanners
     public class SubdomainCheckResult
     {
         public string Subdomain { get; set; } = "";
-        public string Status { get; set; } = "";
+        public string Status { get; set; } = ""; // Resolved / Did Not Resolve / Error
         public string? IP { get; set; }
-        public string? Summary { get; set; }
-        public string? Severity { get; set; }
+        public string? Summary { get; set; } // "Secure", "Possible Takeover", "Takeover Confirmed", "Error"
+        public string? Severity { get; set; } // None / Low / Medium / High / Critical
+        public string? Service { get; set; } // GitHub / AWS etc.
+        public string? Message { get; set; }
     }
+
+
+    // public class SubdomainCheckResult
+    // {
+    //     public string Subdomain { get; set; } = "";
+    //     public string Status { get; set; } = "";
+    //     public string? IP { get; set; }
+    //     public string? Summary { get; set; }
+    //     public string? Severity { get; set; }
+    // }
 }
+
 
 
 

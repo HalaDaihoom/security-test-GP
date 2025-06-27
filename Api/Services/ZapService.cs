@@ -4,17 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+
 
 public class ZapService
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "g4uemp8bue65asn9urpov1lc2v";
+    private readonly string _apiKey;
 
-    public ZapService(HttpClient httpClient)
+    public ZapService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://2217-156-209-9-183.ngrok-free.app"); 
-        _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); 
+        _httpClient.BaseAddress = new Uri(configuration["Zap:BaseUrl"]);
+        _apiKey = configuration["Zap:ApiKey"];
+        _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", _apiKey);
         _httpClient.Timeout = TimeSpan.FromMinutes(20); 
     }
 
@@ -111,3 +114,118 @@ public class ZapService
         }
     }
 }
+
+
+// using System;
+// using System.Net.Http;
+// using System.Threading;
+// using System.Threading.Tasks;
+// using Newtonsoft.Json.Linq;
+// using Newtonsoft.Json;
+
+// public class ZapService
+// {
+//     private readonly HttpClient _httpClient;
+//     private const string ApiKey = "sl31bftkv1ko07tla95u094luq";
+
+//     public ZapService(HttpClient httpClient)
+//     {
+//         _httpClient = httpClient;
+//         _httpClient.BaseAddress = new Uri("https://f4a0-156-209-31-59.ngrok-free.app"); 
+//         _httpClient.DefaultRequestHeaders.Add("X-ZAP-API-Key", ApiKey); 
+//         _httpClient.Timeout = TimeSpan.FromMinutes(20); 
+//     }
+
+//     public async Task<string> StartSpiderAsync(string url, CancellationToken cancellationToken = default)
+//     {
+//         try
+//         {
+//             var response = await _httpClient.GetAsync($"/JSON/spider/action/scan/?url={Uri.EscapeDataString(url)}", cancellationToken);
+//             response.EnsureSuccessStatusCode();
+//             var content = await response.Content.ReadAsStringAsync();
+//             var spiderId = JObject.Parse(content)["scan"]?.ToString();
+
+//             if (string.IsNullOrEmpty(spiderId))
+//                 throw new Exception("Spider ID not found in the response.");
+
+//             return spiderId;
+//         }
+//         catch (Exception ex)
+//         {
+//             throw new Exception($"Failed to start spider for URL {url}: {ex.Message}", ex);
+//         }
+//     }
+
+//     public async Task<string> GetSpiderStatusAsync(string spiderId, CancellationToken cancellationToken = default)
+//     {
+//         try
+//         {
+//             var response = await _httpClient.GetAsync($"/JSON/spider/view/status/?scanId={spiderId}", cancellationToken);
+//             response.EnsureSuccessStatusCode();
+//             var content = await response.Content.ReadAsStringAsync();
+//             return JObject.Parse(content)["status"]?.ToString();
+//         }
+//         catch (Exception ex)
+//         {
+//             throw new Exception($"Failed to get spider status for spiderId {spiderId}: {ex.Message}", ex);
+//         }
+//     }
+
+//     public async Task<int> StartScanAsync(string url, CancellationToken cancellationToken = default)
+//     {
+//         try
+//         {
+//             var response = await _httpClient.GetAsync($"/JSON/ascan/action/scan/?url={Uri.EscapeDataString(url)}", cancellationToken);
+//             response.EnsureSuccessStatusCode();
+//             var content = await response.Content.ReadAsStringAsync();
+//             var scanId = JObject.Parse(content)["scan"]?.ToString();
+
+//             if (string.IsNullOrEmpty(scanId))
+//                 throw new Exception("Scan ID not found in the response.");
+
+//             if (!int.TryParse(scanId, out int zapScanId))
+//                 throw new Exception($"Invalid Scan ID returned: {scanId}");
+
+//             return zapScanId;
+//         }
+//         catch (Exception ex)
+//         {
+//             throw new Exception($"Failed to start scan for URL {url}: {ex.Message}", ex);
+//         }
+//     }
+
+//     public async Task<string> GetScanStatusAsync(int scanId, CancellationToken cancellationToken = default)
+//     {
+//         try
+//         {
+//             var response = await _httpClient.GetAsync($"/JSON/ascan/view/status/?scanId={scanId}", cancellationToken);
+//             response.EnsureSuccessStatusCode();
+//             var content = await response.Content.ReadAsStringAsync();
+//             return JObject.Parse(content)["status"]?.ToString();
+//         }
+//         catch (Exception ex)
+//         {
+//             throw new Exception($"Failed to get scan status for scanId {scanId}: {ex.Message}", ex);
+//         }
+//     }
+
+//     public async Task<string> GetScanResultsAsync(string baseUrl, CancellationToken cancellationToken)
+//     {
+//         try
+//         {
+//             if (string.IsNullOrEmpty(baseUrl))
+//                 throw new ArgumentException("Base URL is required to fetch scan results.");
+
+//             string apiUrl = $"/JSON/alert/view/alerts/?baseurl={Uri.EscapeDataString(baseUrl)}";
+
+//             var response = await _httpClient.GetAsync(apiUrl, cancellationToken);
+//             response.EnsureSuccessStatusCode();
+
+//             return await response.Content.ReadAsStringAsync(cancellationToken);
+//         }
+//         catch (Exception ex)
+//         {
+//             throw new Exception($"Failed to fetch scan results for baseUrl {baseUrl}: {ex.Message}", ex);
+//         }
+//     }
+// }

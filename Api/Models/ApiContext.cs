@@ -18,6 +18,7 @@ namespace Api.Models
         public DbSet<ScanRequest> ScanRequests { get; set; }
         public DbSet<Vulnerability> Vulnerabilities { get; set; }
         public DbSet<ScanResult> ScanResults { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

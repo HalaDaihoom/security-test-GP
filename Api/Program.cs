@@ -102,12 +102,6 @@ builder.Services.AddDbContext<ApiContext>(options =>
         {
             mysqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
         }));
-// builder.Services.AddDbContext<ApiContext>(options =>
-//     options.UseMySql(
-//         builder.Configuration.GetConnectionString("Api"),
-//         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("Api"))
-//     )
-// );
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -128,24 +122,22 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080); // Azure requires port 8080
+    options.ListenAnyIP(5000); // Azure requires port 8080
+    
 });
+
+builder.Services.AddMemoryCache();
 
 // Services for authorization
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddHttpClient<ZapService>();
+builder.Services.AddHttpClient<XssZapService>();
+builder.Services.AddScoped<SqlInjectionService>();
 builder.Services.AddHttpClient<SubdomainExtractorService>();
 builder.Services.AddHttpClient<SubdomainTakeoverScanner>();
 
-// Register HttpClient for SqlInjectionScanner
-builder.Services.AddHttpClient<SqlInjectionScanner>();
-
-//builder.Services.AddHttpClient<ModernSqlInjectionScanner>();
-
-
-// Register SqlInjectionScanner
-builder.Services.AddScoped<SqlInjectionScanner>();
+builder.Services.AddScoped<SubzyTestService>();
 
 // add to subdomain takeover
 builder.Services.AddLogging(logging =>
@@ -166,11 +158,11 @@ builder.Services.AddScoped<SubdomainTakeoverScanner>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
-//}
+}
 
 
 app.UseHttpsRedirection();

@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Api.DTOs
 {
-    public class SummarizeScanResults
+    public class XssScanRequestDto
     {
-        public int ScanId { get; set; }
-        public int RequestId { get; set; }
-
+        public string TargetUrl { get; set; }
     }
-    
 }
