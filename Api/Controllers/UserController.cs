@@ -146,6 +146,10 @@ namespace Api.Controllers
                     return StatusCode(504, "Scan timed out.");
                 }
 
+                await Task.Delay(2000, cancellationToken); // short pause
+                await _zapService.WaitForAlertsToSettleAsync(model.Url, cancellationToken: cancellationToken);
+
+
                 scanRequest.Status = "Completed";
                 scanRequest.CompletedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync(cancellationToken);
@@ -171,54 +175,69 @@ namespace Api.Controllers
             }
         }
 
-        [HttpGet("scan-results/by-request/{requestId}")]
-        public async Task<IActionResult> GetScanResultsByRequest([FromRoute] int requestId, CancellationToken cancellationToken)
+ [HttpGet("/api/scan-results/by-request/{requestId}")]
+public async Task<IActionResult> GetScanResultsByRequest(int requestId, CancellationToken cancellationToken)
+{
+    try
+    {
+        var scanRequest = await _context.ScanRequests
+            .Include(r => r.Website)
+            .FirstOrDefaultAsync(r => r.RequestId == requestId, cancellationToken);
+
+        if (scanRequest == null)
+            return NotFound("Scan request not found.");
+
+        if (scanRequest.Website == null)
+            return NotFound("Associated website not found for this request.");
+
+        string baseUrl = scanRequest.Website.Url;
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            return NotFound("Website URL is missing for this scan request.");
+
+        string scanResultsJson = await _zapService.GetScanResultsAsync(baseUrl, cancellationToken);
+        _logger.LogInformation("Raw ZAP scan results: {Json}", scanResultsJson);
+
+        if (string.IsNullOrWhiteSpace(scanResultsJson))
         {
-            try
-            {
-                var scanRequest = await _context.ScanRequests
-                    .Include(r => r.Website)
-                    .FirstOrDefaultAsync(r => r.RequestId == requestId, cancellationToken);
-
-                if (scanRequest == null)
-                    return NotFound("Scan request not found.");
-
-                string baseUrl = scanRequest.Website.Url;
-                string scanResultsJson = await _zapService.GetScanResultsAsync(baseUrl, cancellationToken);
-
-                var zapAlerts = JsonConvert.DeserializeObject<ZapAlertsDtoResponse>(scanResultsJson);
-
-                if (zapAlerts?.Alerts == null || !zapAlerts.Alerts.Any())
-                {
-                    return Ok(new { Message = "No vulnerabilities found.", Results = Array.Empty<ScanResult>() });
-                }
-
-                var resultsToSave = zapAlerts.Alerts.Select(alert => new ScanResult
-                {
-                    RequestId = requestId,
-                    ZAPScanId = scanRequest.ZAPScanId,
-                    Severity = alert.Risk,
-                    Details = JsonConvert.SerializeObject(alert)
-                }).ToList();
-
-                var existingResults = await _context.ScanResults
-                    .Where(r => r.RequestId == requestId)
-                    .ToListAsync(cancellationToken);
-
-                if (!existingResults.Any())
-                {
-                    await _context.ScanResults.AddRangeAsync(resultsToSave, cancellationToken);
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-
-                return Ok(new { Message = "Scan results retrieved successfully.", Results = resultsToSave });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error retrieving scan results: {ex.Message}");
-                return StatusCode(500, "Failed to retrieve scan results.");
-            }
+            _logger.LogWarning("ZAP returned empty scan results for URL: {Url}", baseUrl);
+            return Ok(new { Message = "No vulnerabilities found.", Results = Array.Empty<ScanResult>() });
         }
+
+        var zapAlerts = JsonConvert.DeserializeObject<ZapAlertsDtoResponse>(scanResultsJson);
+
+        if (zapAlerts?.Alerts == null || !zapAlerts.Alerts.Any())
+        {
+            return Ok(new { Message = "No vulnerabilities found.", Results = Array.Empty<ScanResult>() });
+        }
+
+        var resultsToSave = zapAlerts.Alerts.Select(alert => new ScanResult
+        {
+            RequestId = requestId,
+            ZAPScanId = scanRequest.ZAPScanId,
+            Severity = alert.Risk,
+            Details = JsonConvert.SerializeObject(alert)
+        }).ToList();
+
+        var existingResults = await _context.ScanResults
+            .Where(r => r.RequestId == requestId)
+            .ToListAsync(cancellationToken);
+
+        if (!existingResults.Any())
+        {
+            await _context.ScanResults.AddRangeAsync(resultsToSave, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        return Ok(new { Message = "Scan results retrieved successfully.", Results = resultsToSave });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"Error retrieving scan results for requestId {requestId}");
+        return StatusCode(500, "Failed to retrieve scan results.");
+    }
+}
+
 
 
         [HttpGet("scan-results")]
@@ -230,14 +249,16 @@ namespace Api.Controllers
 
             var scanHistory = await _context.ScanRequests
                 .Include(sr => sr.Website)
+                .Include(sr => sr.Vulnerability)
                 .Where(sr => sr.UserId == userId)
                 .OrderByDescending(sr => sr.StartedAt)
                 .Select(sr => new
                 {
-                    sr.RequestId, // ✅ Add this line
+                    sr.RequestId,
                     sr.Website.Url,
                     sr.StartedAt,
-                    sr.ZAPScanId
+                    sr.ZAPScanId,
+                    VulnerabilityType = sr.Vulnerability != null ? sr.Vulnerability.VulnerabilityName : null
                 })
                 .ToListAsync(cancellationToken);
 
@@ -254,10 +275,6 @@ namespace Api.Controllers
                 if (request.RequestId <= 0)
                     return BadRequest("Invalid RequestId.");
 
-
-                // var results = await _context.ScanResults
-                //     .Where(r => r.ZAPScanId == request.ScanId)
-                //     .ToListAsync(cancellationToken);
                 var results = await _context.ScanResults
                 .Where(r => r.RequestId == request.RequestId)
                 .ToListAsync(cancellationToken);
@@ -457,182 +474,5 @@ namespace Api.Controllers
         }
 
 
-        // [HttpGet("summary")]
-        // public async Task<IActionResult> GetSummary([FromQuery] int scanId, CancellationToken cancellationToken)
-        // {
-        //     try
-        //     {
-        //         var scanResult = await _context.ScanResults
-        //             .Where(r => r.ZAPScanId == scanId && !string.IsNullOrEmpty(r.Summary))
-        //             .FirstOrDefaultAsync(cancellationToken);
-
-        //         if (scanResult == null)
-        //             return NotFound("Summary not available.");
-
-        //         return Ok(new { Summary = scanResult.Summary });
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError($"Error retrieving summary: {ex.Message}");
-        //         return StatusCode(500, "Failed to retrieve summary.");
-        //     }
-        // }
-
-
     }
 }
-
-
-
-// using System;
-// using System.Threading;
-// using System.Threading.Tasks;
-// using Microsoft.AspNetCore.Authorization;
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
-// using System.Security.Claims;
-// using Api.Models;
-// using Microsoft.Extensions.Logging;
-// using Newtonsoft.Json;
-// using Api.DTOs;
-// using Api.Services;
-
-// namespace Api.Controllers
-// {
-
-
-//     [Authorize(Roles = "User")]
-//     [Route("api/")]
-//     [ApiController]
-//     public class UserController : ControllerBase
-//     {
-//         private readonly IAuthService _authService;
-//         private readonly ApiContext _context;
-//         private readonly ZapService _zapService;
-//         private readonly IWebHostEnvironment _webHostEnvironment; 
-
-//         private readonly ILogger<UserController> _logger;
-
-//         public UserController(IAuthService authService, ApiContext context, ZapService zapService,IWebHostEnvironment webHostEnvironment, ILogger<UserController> logger)
-//         {
-//             _authService = authService;
-//             _context = context;
-//             _zapService = zapService;
-//             _webHostEnvironment = webHostEnvironment;
-//             _logger = logger;
-//         }
-
-// [HttpPost("scan-requests")]
-// public async Task<IActionResult> AutomaticScanner([FromBody] Website model, CancellationToken cancellationToken)
-// {
-//     _logger.LogInformation("Received scan request.");
-
-//     if (model == null || !ModelState.IsValid)
-//     {
-//         _logger.LogError("Invalid request received.");
-//         return BadRequest("Invalid request. Please provide a valid website URL.");
-//     }
-
-//     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-//     if (string.IsNullOrEmpty(userId))
-//     {
-//         _logger.LogError("Unauthorized access - User ID not found.");
-//         return Unauthorized("User ID not found.");
-//     }
-
-//     try
-//     {
-//         _logger.LogInformation($"Starting scan for {model.Url}");
-
-//         var spiderId = await _zapService.StartSpiderAsync(model.Url, cancellationToken);
-//         _logger.LogInformation($"Spider started with ID {spiderId}");
-
-//         var scanId = await _zapService.StartScanAsync(model.Url, cancellationToken);
-//         _logger.LogInformation($"Scan started with ID {scanId}");
-
-//         return Ok(new { Message = "Scan started!", ScanId = scanId });
-//     }
-//     catch (Exception ex)
-//     {
-//         _logger.LogError($"Scan failed: {ex.Message}");
-//         return StatusCode(500, "Scan failed due to an internal error.");
-//     }
-// }
-
-// [HttpGet("scan-result")]
-// public async Task<IActionResult> GetScanResults([FromQuery] int scanId, CancellationToken cancellationToken)
-// {
-//     try
-//     {
-//         var scanRequest = await _context.ScanRequests
-//             .Include(r => r.Website)
-//             .FirstOrDefaultAsync(r => r.ZAPScanId == scanId, cancellationToken);
-
-//         if (scanRequest == null)
-//             return NotFound("Scan not found.");
-
-//         string baseUrl = scanRequest.Website.Url;
-//         string scanResultsJson = await _zapService.GetScanResultsAsync(baseUrl, cancellationToken);
-
-//         var zapAlerts = JsonConvert.DeserializeObject<ZapAlertsDtoResponse>(scanResultsJson);
-
-//         if (zapAlerts?.Alerts == null || !zapAlerts.Alerts.Any())
-//         {
-//             return Ok(new { Message = "No vulnerabilities found.", Results = Array.Empty<ScanResult>() });
-//         }
-
-//         var resultsToSave = zapAlerts.Alerts.Select(alert => new ScanResult
-//         {
-//             RequestId = scanRequest.RequestId,
-//             ZAPScanId = scanId, // Store ZAPScanId here
-
-//             Severity = alert.Risk,
-//             Details = JsonConvert.SerializeObject(alert)
-//         }).ToList();
-
-//         var existingResults = await _context.ScanResults
-//             .Where(r => r.RequestId == scanRequest.RequestId)
-//             .ToListAsync(cancellationToken);
-
-//         if (!existingResults.Any())
-//         {
-//             await _context.ScanResults.AddRangeAsync(resultsToSave, cancellationToken);
-//             await _context.SaveChangesAsync(cancellationToken);
-//         }
-
-//         return Ok(new { Message = "Scan results retrieved successfully.", Results = resultsToSave });
-//     }
-//     catch (Exception ex)
-//     {
-//         _logger.LogError($"Error retrieving scan results: {ex.Message}");
-//         return StatusCode(500, "Failed to retrieve scan results.");
-//     }
-// }
-
-// [HttpGet("scan-results")]
-// public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
-// {
-//     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-//     if (string.IsNullOrEmpty(userId))
-//         return Unauthorized("User ID not found.");
-
-//     var scanHistory = await _context.ScanRequests
-//         .Include(sr => sr.Website)
-//         .Where(sr => sr.UserId == userId)
-//         .OrderByDescending(sr => sr.StartedAt)
-//         .Select(sr => new
-//         {
-//             sr.Website.Url,
-//             sr.StartedAt,
-//             sr.ZAPScanId
-//         })
-//         .ToListAsync(cancellationToken);
-
-//     return Ok(scanHistory);
-// }
-
-//     }
-// }
-
-
-

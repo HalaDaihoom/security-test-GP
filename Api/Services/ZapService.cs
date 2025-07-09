@@ -94,6 +94,44 @@ public class ZapService
         }
     }
 
+    public async Task WaitForAlertsToSettleAsync(string baseUrl, int expectedMinimumCount = 1, int maxRetries = 10, int delayBetweenRetriesMs = 3000, CancellationToken cancellationToken = default)
+    {
+        int previousCount = 0;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            var response = await _httpClient.GetAsync($"/JSON/alert/view/alertsSummary/?baseurl={Uri.EscapeDataString(baseUrl)}", cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            var summary = JObject.Parse(content)["alertsSummary"] as JObject;
+
+            int currentCount = 0;
+            if (summary != null)
+            {
+                foreach (var item in summary)
+                {
+                    if (int.TryParse(item.Value?.ToString(), out int count))
+                    {
+                        currentCount += count;
+                    }
+                }
+            }
+
+            if (currentCount >= expectedMinimumCount && currentCount == previousCount)
+            {
+                // Alerts count is stable
+                return;
+            }
+
+            previousCount = currentCount;
+            await Task.Delay(delayBetweenRetriesMs, cancellationToken);
+        }
+
+        // Optional: throw if alerts never settled
+        throw new TimeoutException("ZAP alerts did not settle in time.");
+    }
+
+
     public async Task<string> GetScanResultsAsync(string baseUrl, CancellationToken cancellationToken)
     {
         try

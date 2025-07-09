@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Identity;
+using Api.Models.DTOs;
 
 
 namespace Api.Controllers
@@ -29,15 +30,17 @@ namespace Api.Controllers
         private readonly ApiContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment; 
         private readonly UserManager<ApplicationUser> _userManager; // Add this field
+        private readonly IEmailService _emailService;
 
-       // Update the constructor to include UserManager
-public HomeController(IAuthService authService, ApiContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager)
-{
-    _authService = authService;
-    _context = context;
-    _webHostEnvironment = webHostEnvironment;
-    _userManager = userManager; // Add this line
-}
+        // Update the constructor to include UserManager
+        public HomeController(IAuthService authService, ApiContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager, IEmailService emailService)
+        {
+            _authService = authService;
+            _context = context;
+            _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager; // Add this line
+            _emailService = emailService;
+        }
        
 
     [HttpGet("health")]
@@ -99,20 +102,6 @@ public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
         return StatusCode(500, $"Internal server error: {ex.Message}");
     }
 }
-//         [HttpPost("users")]
-// public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
-// {
-//     if (!ModelState.IsValid)
-//         return BadRequest(ModelState);
-
-//     var result = await _authService.RegisterAsync(model);
-
-//     if (!result.IsAuthenticated)
-//         return BadRequest(result.Message);
-
-//     return Ok(result);
-// }
-
 
          /// <summary>
         /// Log in an existing user.
@@ -146,6 +135,36 @@ public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
 
             return Ok(result);
         }
+        
+        [HttpPost("send-reset-password")]
+        public async Task<IActionResult> SendResetPassword([FromBody] ResetPasswordRequest model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return NotFound("No user found with this email.");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetUrl = $"{model.ClientURI}?uid={user.Id}&token={Uri.EscapeDataString(token)}";
+
+            await _emailService.SendEmailAsync(user.Email, "Reset Your Password",
+                $"<p>Click <a href='{resetUrl}'>here</a> to reset your password.</p><p>If you didn't request this, ignore this email.</p>");
+
+            return Ok("Password reset link has been sent to your email.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Password has been reset successfully.");
+        }
 
         /// <summary>
         /// Assign a role to a user.
@@ -167,7 +186,7 @@ public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
         /// - `400 Bad Request`: Invalid model or role assignment failed.  
         /// </remarks>
         /// 
-        
+
         // [HttpPost("addrole")]
         // public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleModel model)
         // {
@@ -182,7 +201,7 @@ public async Task<IActionResult> RegisterAsync([FromForm] RegisterModel model)
         //     return Ok(model);
         // }
 
-       /// <summary>
+        /// <summary>
         /// Retrieve a protected resource.
         /// </summary>
         /// <remarks>

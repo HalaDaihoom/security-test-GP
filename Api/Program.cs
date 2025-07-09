@@ -128,6 +128,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 builder.Services.AddMemoryCache();
 
+
 // Services for authorization
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -136,7 +137,7 @@ builder.Services.AddHttpClient<XssZapService>();
 builder.Services.AddScoped<SqlInjectionService>();
 builder.Services.AddHttpClient<SubdomainExtractorService>();
 builder.Services.AddHttpClient<SubdomainTakeoverScanner>();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<SubzyTestService>();
 
 // add to subdomain takeover
