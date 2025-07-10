@@ -1,26 +1,68 @@
-version: '3.8'
-
 services:
-  zap:
-    build:
-      context: ./Zap
+  frontend:
+    build: ./scanWebsiteFront
     ports:
-      - "8081:8081"
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:5000
     networks:
       - zapnet
 
-  dotnetapi:
-    build:
-      context: ./YourDotNetApi
+  backend:
+    build: ./Api
     ports:
-      - "5000:80"
-    networks:
-      - zapnet
+      - "5000:5000"
     depends_on:
+      - db
       - zap
     environment:
-      - ZAP_BASE_URL=http://zap:8081
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=12345678
+      - DB_NAME=Api
+    networks:
+      - zapnet
+    entrypoint: >
+      /bin/sh -c "
+        echo 'Waiting for ZAP to be ready...' &&
+        until curl --output /dev/null --silent --head --fail http://zap:8080; do
+          echo 'ZAP not ready yet...';
+          sleep 5;
+        done;
+        echo 'ZAP is ready. Starting backend...' &&
+        cd /app && dotnet Api.dll"
+
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: Api
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - zapnet
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: zap
+    ports:
+      - "8082:8080"
+    command: >
+      zap.sh -daemon -host 0.0.0.0 -port 8080
+      -config api.key=vcpcdk2lqdr5n9b4t858ud4kl
+      -config api.addrs.addr.name=.*
+      -config api.addrs.addr.regex=true
+    networks:
+      - zapnet
+
+volumes:
+  mysql-data:
 
 networks:
   zapnet:
-    driver: bridge
